@@ -3,15 +3,11 @@ from decimal import Decimal
 from trytond.model import fields, ModelView
 from trytond.wizard import Wizard, StateView, StateTransition, Button
 from trytond.pool import Pool
-from trytond.modules.account_invoice_ar.invoice import TIPO_COMPROBANTE
+#from trytond.modules.account_invoice_ar.invoice import TIPO_COMPROBANTE
 
 __all__ = ['WizardExportRN3811Start', 'WizardExportRN3811File',
     'WizardExportRN3811']
 
-
-# -----------------------------------------------------------------------------
-# Helper functions
-# -----------------------------------------------------------------------------
 
 class ExportArbaMixin(object):
 
@@ -162,7 +158,11 @@ class RN3811(ExportArbaMixin):
         fields = self.ordered_fields()
         fields = [x for x in fields if x != '']
         separator = csv_format and ';' or ''
-        return separator.join(fields) + self._EOL
+        try:
+            text = separator.join(fields) + self._EOL
+        except:
+            import ipdb;ipdb.set_trace()
+        return text
 
 
 class LoteImportacion12(RN3811):
@@ -175,7 +175,7 @@ class LoteImportacion12(RN3811):
     def __init__(self):
         """ Declara los campos según el tipo de informe.
         """
-        super(__name__, self).__init__()
+        super(LoteImportacion12, self).__init__()
 
         # Campo 1: Cuit Contribuyente percibido.
         self.cuit_contribuyente = None
@@ -225,7 +225,7 @@ class WizardExportRN3811Start(ModelView):
 class WizardExportRN3811File(ModelView):
     'Wizard Export RN3811 File'
     __name__ = 'account.export.rn3811.file'
-    lote12_file = fields.Binary('1.2. Percepciones Act. 7 método Percibido' \
+    lote12_file = fields.Binary(u'1.2. Percepciones Act. 7 método Percibido' \
         '(quincenal)', readonly=True)
 
 
@@ -234,13 +234,13 @@ class WizardExportRN3811(Wizard):
     __name__ = 'account.export.rn3811'
 
     start = StateView('account.export.rn3811.start',
-        'account_rn3811.export_rn3811_start_view_form', [
+        'account_arba.export_rn3811_start_view_form', [
             Button('Cancel', 'end', 'tryton-cancel'),
             Button('Export', 'export', 'tryton-ok', default=True),
             ])
     export = StateTransition()
     result = StateView('account.export.rn3811.file',
-        'account_rn3811.export_rn3811_file_view_form', [
+        'account_arba.export_rn3811_file_view_form', [
             Button('Done', 'end', 'tryton-ok', default=True),
             ])
 
@@ -306,7 +306,7 @@ class WizardExportRN3811(Wizard):
          - add_line (False or True)
         """
         Cbte = LoteImportacion12()
-        tax_amounts = Cbte.taxes(self, invoice)
+        tax_amounts = Cbte.taxes(invoice)
         if tax_amounts['iibb'] == Decimal('0'):
             return ('', False)
 
@@ -314,14 +314,15 @@ class WizardExportRN3811(Wizard):
         ref = invoice.reference or invoice.number
         ref = ref.strip().upper()
         comprobante = {}
-        comprobante['letter'] = invoice.invoice_type.invoice_type_string[-1:]
+
+        comprobante['letter'] = invoice.invoice_type.rec_name[-1:]
         comprobante['pos'] = ref.split('-')[0] if '-' in ref else ''
         comprobante['number'] = ref.split('-')[1] if '-' in ref else ref
 
         # -- Campo 1: CUIT contribuyente. --
         # | Cantidad: 13 | Dato: Alfanumérico |
         Cbte.cuit_contribuyente = Cbte._format_vat_number(
-            invoice.party.vat_number, True)
+            invoice.party.vat_number)
 
         # -- Campo 2: Fecha de percepción. --
         # | Cantidad: 10 | Dato: Fecha |
@@ -336,26 +337,27 @@ class WizardExportRN3811(Wizard):
         # | Cantidad: 1 | Dato: Texto |
         # | Formato: Valores F=Factura, R=Recibo,
         # | C=Nota Crédito, D=Nota Debito|
-        tipo_comprobante = invoice.invoice_type.invoice_type_string[3:4]
+        tipo_comprobante = invoice.invoice_type.rec_name[0]
+
         if tipo_comprobante == 'N':
-            tipo_comprobante = invoice.invoice_type.invoice_type_string[11:12]
+            tipo_comprobante = invoice.invoice_type.rec_name[8:9]
         Cbte.tipo_comprobante = tipo_comprobante
 
         # -- Campo 4: Letra de Comprobante. --
         # | Cantidad: 1 | Dato: Texto |
         # | Formato: Valores A, B, C o ' ' |
-        Cbte.letra_comprobante = invoice.invoice_type.invoice_type_string[-1]
+        Cbte.letra_comprobante = invoice.invoice_type.rec_name[-1]
 
         # -- Campo 5: Numero Sucursal. --
         # | Cantidad: 4 | Dato: Numerico |
         # | Formato: Mayor o igual a cero. Completar con ceros a la izq ' ' |
-        Cbte.numero_sucursal = Cbte._format_number(invoice.number.split('-')[0],
+        Cbte.nro_sucursal = Cbte._format_number(invoice.number.split('-')[0],
                4, 0, include_sign=False)
 
         # -- Campo 6: Numero Emision. --
         # | Cantidad: 8 | Dato: Numerico |
         # | Formato: Mayor o igual a cero. Completar con ceros a la izq ' ' |
-        Cbte.numero_sucursal = Cbte._format_number(invoice.number.split('-')[1],
+        Cbte.nro_emision = Cbte._format_number(invoice.number.split('-')[1],
                8, 0, include_sign=False)
 
         # -- Campo 7: Monto imponible. --

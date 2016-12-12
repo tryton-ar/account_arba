@@ -3,16 +3,7 @@
     <label string="The report file has been sucessfully generated."
         colspan="4" id="title"/>
 
-    <label name="compras_cbte_file"/>
-    <field name="compras_cbte_file"/>
-
-    <label name="compras_alic_file"/>
-    <field name="compras_alic_file"/>
-
-    <label name="ventas_cbte_file"/>
-    <field name="ventas_cbte_file"/>
-
-    <label name="ventas_alic_file"/>
-    <field name="ventas_alic_file"/>
+    <label name="lote12_file"/>
+    <field name="lote12_file"/>
 
 </form>

@@ -6,8 +6,6 @@
     <label name="period"/>
     <field name="period"/>
     <group colspan="4" id="options">
-        <label name="check_vat"/>
-        <field name="check_vat"/>
         <label name="csv_format"/>
         <field name="csv_format"/>
     </group>
