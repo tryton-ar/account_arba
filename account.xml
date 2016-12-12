@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<tryton>
+    <data>
+
+        <record model="ir.action.wizard" id="wiz_export_rn3811">
+            <field name="name">Exports Report (RN3811)</field>
+            <field name="wiz_name">account.export.rn3811</field>
+        </record>
+        <menuitem id="menu_wiz_export_rn3811" name="Exports Report (RN3811)"
+            action="wiz_export_rn3811" parent="account.menu_reporting"/>
+
+        <record model="ir.ui.view" id="export_rn3811_start_view_form">
+            <field name="model">account.export.rn3811.start</field>
+            <field name="type">form</field>
+            <field name="name">export_rn3811_start_form</field>
+        </record>
+        <record model="ir.ui.view" id="export_rn3811_file_view_form">
+            <field name="model">account.export.rn3811.file</field>
+            <field name="type">form</field>
+            <field name="name">export_rn3811_file_form</field>
+        </record>
+
+    </data>
+</tryton>

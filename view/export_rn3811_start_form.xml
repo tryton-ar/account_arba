@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<form string="Export Invoices in RG 3685 format">
+    <separator
+        string="This wizard will export invoicing data to a RG 3685 format file."
+        colspan="4" id="title"/>
+    <label name="period"/>
+    <field name="period"/>
+    <group colspan="4" id="options">
+        <label name="check_vat"/>
+        <field name="check_vat"/>
+        <label name="csv_format"/>
+        <field name="csv_format"/>
+    </group>
+</form>
