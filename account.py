@@ -86,7 +86,7 @@ class ExportArbaMixin(object):
         if int_length > 0:
             ascii_string += '%.*d' % (int_length, abs(int_part))
         if dec_length > 0:
-            ascii_string += str(dec_part) + (dec_length - len(str(dec_part))) * '0'
+            ascii_string += '.' + str(dec_part) + (dec_length - 1 - len(str(dec_part))) * '0'
         if include_sign:
             ascii_string = sign + ascii_string[len(sign):]
         # Sanity-check
@@ -372,14 +372,14 @@ class WizardExportRN3811(Wizard):
         # | Cantidad: 11 | Dato: Numérico |
         if invoice.type == 'out_invoice':
             Cbte.monto_imponible = Cbte._format_number(invoice.total_amount,
-                   12, 2, include_sign=True)
+                   9, 3, include_sign=True)
             Cbte.importe_percepcion = Cbte._format_number(tax_amounts['iibb'],
-                   12, 2, include_sign=True)
+                   8, 3, include_sign=True)
         elif invoice.type == 'out_credit_note':
             Cbte.monto_imponible = Cbte._format_number(invoice.total_amount * -1,
-                   11, 2, include_sign=True)
+                   9, 3, include_sign=True)
             Cbte.importe_percepcion = Cbte._format_number(tax_amounts['iibb'] * -1,
-                   11, 2, include_sign=True)
+                   8, 3, include_sign=True)
 
         # -- Campo 9: Tipo de operacion
         # | Cantidad: 1 | Dato: Texto |
