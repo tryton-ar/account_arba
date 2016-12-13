@@ -4,6 +4,8 @@ from trytond.model import fields, ModelView
 from trytond.wizard import Wizard, StateView, StateTransition, Button
 from trytond.pool import Pool
 #from trytond.modules.account_invoice_ar.invoice import TIPO_COMPROBANTE
+import logging
+logger = logging.getLogger(__name__)
 
 __all__ = ['WizardExportRN3811Start', 'WizardExportRN3811File',
     'WizardExportRN3811']
@@ -308,7 +310,12 @@ class WizardExportRN3811(Wizard):
         Cbte = LoteImportacion12()
         tax_amounts = Cbte.taxes(invoice)
         if tax_amounts['iibb'] == Decimal('0'):
+            logger.info(u'La factura %s no tiene impuestos con IIBB',
+                invoice.number)
             return ('', False)
+
+        logger.info(u'La factura %s tiene impuestos con IIBB',
+            invoice.number)
 
         # -- Cálculo auxiliar para Campo 2, 3, 4 --
         ref = invoice.reference or invoice.number
@@ -371,12 +378,12 @@ class WizardExportRN3811(Wizard):
         # -- Campo 8: Importe percepcion. --
         # | Cantidad: 11 | Dato: Numérico |
         if invoice.type == 'out_invoice':
-            Cbte.monto_imponible = Cbte._format_number(invoice.total_amount,
+            Cbte.monto_imponible = Cbte._format_number(invoice.untaxed_amount,
                    9, 3, include_sign=True)
             Cbte.importe_percepcion = Cbte._format_number(tax_amounts['iibb'],
                    8, 3, include_sign=True)
         elif invoice.type == 'out_credit_note':
-            Cbte.monto_imponible = Cbte._format_number(invoice.total_amount * -1,
+            Cbte.monto_imponible = Cbte._format_number(invoice.untaxed_amount * -1,
                    9, 3, include_sign=True)
             Cbte.importe_percepcion = Cbte._format_number(tax_amounts['iibb'] * -1,
                    8, 3, include_sign=True)
