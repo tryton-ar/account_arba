@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<form string="Report exported in RG3685 format">
+<form string="Report exported in RN3811 format">
     <label string="The report file has been sucessfully generated."
         colspan="4" id="title"/>
 
