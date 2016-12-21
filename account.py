@@ -160,10 +160,7 @@ class RN3811(ExportArbaMixin):
         fields = self.ordered_fields()
         fields = [x for x in fields if x != '']
         separator = csv_format and ';' or ''
-        try:
-            text = separator.join(fields) + self._EOL
-        except:
-            import ipdb;ipdb.set_trace()
+        text = separator.join(fields) + self._EOL
         return text
 
 
