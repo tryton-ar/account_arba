@@ -3,8 +3,10 @@
     <separator
         string="This wizard will export invoicing data to a RG 3685 format file."
         colspan="4" id="title"/>
-    <label name="period"/>
-    <field name="period"/>
+    <label name="start_date"/>
+    <field name="start_date"/>
+    <label name="end_date"/>
+    <field name="end_date"/>
     <group colspan="4" id="options">
         <label name="csv_format"/>
         <field name="csv_format"/>

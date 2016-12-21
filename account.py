@@ -216,7 +216,8 @@ class LoteImportacion12(RN3811):
 class WizardExportRN3811Start(ModelView):
     'Wizard Export RN3811 Start'
     __name__ = 'account.export.rn3811.start'
-    period = fields.Many2One('account.period', 'Period', required=True)
+    start_date = fields.Date('Start date', required=True)
+    end_date = fields.Date('End date', required=True)
     csv_format = fields.Boolean('CSV format',
         help='Check this box if you want export to csv format.')
 
@@ -266,8 +267,8 @@ class WizardExportRN3811(Wizard):
         domain = [
             ('state', 'in', ['posted', 'paid']),
             ('type', 'in', ventas),
-            ('invoice_date', '>=', self.start.period.start_date),
-            ('invoice_date', '<=', self.start.period.end_date),
+            ('invoice_date', '>=', self.start.start_date),
+            ('invoice_date', '<=', self.start.end_date),
         ]
 
         invoices = Invoice.search(domain, order=[
