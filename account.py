@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 from decimal import Decimal
+import stdnum.ar.cuit as cuit
 from trytond.model import fields, ModelView
 from trytond.wizard import Wizard, StateView, StateTransition, Button
 from trytond.pool import Pool
@@ -104,13 +105,23 @@ class ExportArbaMixin(object):
         res = str(res) + (length - len(str(res))) * ' '  # fill
         return res
 
-    def _format_vat_number(self, vat_number):
+    def _format_vat_number(self, vat_number, check=True):
         """ Formato 99-99999999-9 """
         if not vat_number:
+            return False
+        if check and not self._check_vat_number(vat_number):
             return False
         vat_number = '-'.join([vat_number[:2], vat_number[2:-1],
                 vat_number[-1]])
         return vat_number
+
+    def _check_vat_number(self, vat_number):
+        """ Valida CUIT corto (sin separador) para Argentina. """
+        if (vat_number.isdigit()
+                and len(vat_number) == 11
+                and cuit.is_valid(vat_number)):
+            return True
+        return False
 
     def taxes(self, invoice):
         """ Acumula los importes de las líneas de cada factura.
@@ -326,8 +337,11 @@ class WizardExportRN3811(Wizard):
 
         # -- Campo 1: CUIT contribuyente. --
         # | Cantidad: 13 | Dato: Alfanumérico |
-        Cbte.cuit_contribuyente = Cbte._format_vat_number(
-            invoice.party.vat_number)
+        cuitOk = Cbte._format_vat_number(invoice.party.vat_number)
+        if cuitOk:
+            Cbte.cuit_contribuyente = cuitOk
+        else:
+            Cbte.cuit_contribuyente = ''.rjust(13)
 
         # -- Campo 2: Fecha de percepción. --
         # | Cantidad: 10 | Dato: Fecha |
