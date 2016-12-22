@@ -238,6 +238,7 @@ class WizardExportRN3811File(ModelView):
     __name__ = 'account.export.rn3811.file'
     lote12_file = fields.Binary(u'1.2. Percepciones Act. 7 método Percibido' \
         '(quincenal)', readonly=True)
+    message = fields.Text(u'Message', readonly=True)
 
 
 class WizardExportRN3811(Wizard):
@@ -257,11 +258,14 @@ class WizardExportRN3811(Wizard):
 
     def default_result(self, fields):
         lote12_file = self.result.lote12_file
+        message = self.result.message
 
         self.result.lote12_file = False
+        self.result.message = False
 
         return {
             'lote12_file': lote12_file,
+            'message': message,
             }
 
     def transition_export(self):
@@ -289,10 +293,14 @@ class WizardExportRN3811(Wizard):
 
         # Add the records
         file_contents_lote12 = ''
+        self.result.message = ''
         for invoice in invoices:
-            aux_record, add_line = self._get_formated_record_lote12(invoice)
+            aux_record, add_line, message = \
+                self._get_formated_record_lote12(invoice)
             if add_line:
                 file_contents_lote12 += aux_record
+            elif add_line == False and message != '':
+                self.result.message += message
 
         #
         # Generate the file and save as attachment
@@ -321,7 +329,7 @@ class WizardExportRN3811(Wizard):
         if tax_amounts['iibb'] == Decimal('0'):
             logger.info(u'La factura %s no tiene impuestos con IIBB',
                 invoice.number)
-            return ('', False)
+            return ('', False, '')
 
         logger.info(u'La factura %s tiene impuestos con IIBB',
             invoice.number)
@@ -341,7 +349,9 @@ class WizardExportRN3811(Wizard):
         if cuitOk:
             Cbte.cuit_contribuyente = cuitOk
         else:
-            Cbte.cuit_contribuyente = ''.rjust(13)
+            return ('', False, 'ERROR: La factura %s de la entidad %s no '\
+                'tiene CUIT y no ha sido ingresada al listado' \
+                % (invoice.number, invoice.party.name))
 
         # -- Campo 2: Fecha de percepción. --
         # | Cantidad: 10 | Dato: Fecha |
@@ -404,4 +414,4 @@ class WizardExportRN3811(Wizard):
         # | Cantidad: 1 | Dato: Texto |
         Cbte.tipo_operacion = 'A'
 
-        return (Cbte.a_text(self.start.csv_format), True)
+        return (Cbte.a_text(self.start.csv_format), True, '')
