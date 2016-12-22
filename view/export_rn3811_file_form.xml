@@ -6,4 +6,10 @@
     <label name="lote12_file"/>
     <field name="lote12_file"/>
 
+    <notebook colspan="4">
+        <page string="Message" id='message'>
+            <field name="message"/>
+        </page>
+    </notebook>
+
 </form>
