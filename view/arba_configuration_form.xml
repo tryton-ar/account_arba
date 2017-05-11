@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- This file is part of ispconfig.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<form string="ARBA Configuration">
+    <label name="password"/>
+    <field name="password" widget="password"/>
+    <button name="import_census" string="Import census"/>
+</form>

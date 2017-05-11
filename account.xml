@@ -18,8 +18,31 @@
             <field name="name">export_rn3811_file_form</field>
         </record>
 
+        <record model="ir.ui.view" id="arba_configuration_view_form">
+            <field name="model">account.arba.configuration</field>
+            <field name="type">form</field>
+            <field name="name">arba_configuration_form</field>
+        </record>
+        <record model="ir.action.act_window" id="act_arba_configuration_form">
+            <field name="name">ARBA Configuration</field>
+            <field name="res_model">account.arba.configuration</field>
+        </record>
+        <record model="ir.action.act_window.view"
+            id="act_arba_configuration_view1">
+            <field name="sequence" eval="1"/>
+            <field name="view" ref="arba_configuration_view_form"/>
+            <field name="act_window" ref="act_arba_configuration_form"/>
+        </record>
+
         <menuitem id="menu_wiz_export_rn3811" name="Exports Report (RN3811)"
             action="wiz_export_rn3811" parent="account.menu_reporting"/>
+
+        <menuitem name="ARBA" parent="account.menu_account_configuration"
+            id="menu_main_arba" sequence="10"/>
+
+        <menuitem name="ARBA Configuration" parent="menu_main_arba"
+            id="menu_arba_configuration" action="act_arba_configuration_form"
+            icon="tryton-tree"/>
 
     </data>
 </tryton>

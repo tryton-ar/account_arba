@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!-- This file is part of account_arba.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<tryton>
+    <data>
+        <record model="ir.ui.view" id="party_view_form">
+            <field name="model">party.party</field>
+            <field name="inherit" ref="party.party_view_form"/>
+            <field name="name">party_form</field>
+        </record>
+
+        <!-- user cron arba -->
+        <record model="res.user" id="user_arba">
+            <field name="login">user_arba</field>
+            <field name="name">Cron ARBA</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <record model="ir.cron" id="cron_arba_census_scheduler">
+            <field name="name">Import ARBA Census</field>
+            <field name="request_user" ref="res.user_admin"/>
+            <field name="user" ref="user_arba"/>
+            <field name="active" eval="True"/>
+            <field name="interval_number" eval="1"/>
+            <field name="interval_type">months</field>
+            <field name="number_calls" eval="-1"/>
+            <field name="repeat_missed" eval="False"/>
+            <field name="model">account.arba.configuration</field>
+            <field name="function">import_cron_census</field>
+        </record>
+    </data>
+</tryton>
