@@ -10,6 +10,7 @@ import string
 import random
 import hashlib
 from pyafipws import iibb
+from decimal import Decimal
 import logging
 logger = logging.getLogger(__name__)
 
@@ -27,14 +28,14 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
     __name__ = 'account.arba.configuration'
 
     password_hash = fields.Property(fields.Char('Password Hash'))
-    password = fields.Property(fields.Function(fields.Char('API Password'), getter='get_password',
+    password = fields.Property(fields.Function(fields.Char('Password'), getter='get_password',
         setter='set_password'))
     arba_mode_cert = fields.Property(fields.Selection([
            ('homologacion', u'Homologación'),
            ('produccion', u'Producción'),
        ], 'Modo de certificacion',
        help=u"El objetivo de Homologación (testing), es facilitar las pruebas. \
-           Los certificados de Homologación y Producción son distintos."))
+           Las claves de Homologación y Producción son distintos."))
 
     @classmethod
     def __setup__(cls):
@@ -48,8 +49,8 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
                 'import_census': {},
                 })
 
-    @staticmethod
-    def default_arba_mode_cert():
+    @classmethod
+    def default_arba_mode_cert(cls):
         return 'homologacion'
 
     def get_password(self, name):
@@ -123,29 +124,31 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
 
     @classmethod
     @ModelView.button
-    def import_census(self, configs):
+    def import_census(cls, configs):
         """
         Import arba census.
         """
         partys = Pool().get('party.party').search([
                 ('vat_number', '!=', None),
-                ])
+                ], limit=200)
 
-        ws = self.conect_arba()
+        ws = cls.conect_arba()
         Date = Pool().get('ir.date')
         _, end_date = monthrange(Date.today().year, Date.today().month)
         fecha_desde = Date.today().strftime('%Y%m') + '01'
         fecha_hasta = Date.today().strftime('%Y%m') + str(end_date)
         for party in partys:
-            data = self.get_arba_data(ws, party, fecha_desde, fecha_hasta)
+            data = cls.get_arba_data(ws, party, fecha_desde, fecha_hasta)
             if data is not None:
-                party.AlicuotaPercepcion = data.AlicuotaPercepcion
-                party.AlicuotaRetencion =  data.AlicuotaRetencion
+                if data.AlicuotaPercepcion != '':
+                    party.AlicuotaPercepcion = Decimal(data.AlicuotaPercepcion.replace(',','.'))
+                if data.AlicuotaRetencion != '':
+                    party.AlicuotaRetencion =  Decimal(data.AlicuotaRetencion.replace(',','.'))
+                    party.AlicuotaPercepcion = Decimal(data.AlicuotaPercepcion.replace(',','.'))
                 party.save()
 
-
     @classmethod
-    def conect_arba(cls):
+    def conect_arba(self):
         'conect_arba'
         Config = Pool().get('account.arba.configuration')
         config = Config(1)
@@ -173,7 +176,9 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
         """
         Cron import arba census.
         """
+        logger.info('Start Scheduler start import arba census.')
         cls.import_census(args)
+        logger.info('End Scheduler import arba census.')
         return True
 
     #@classmethod
