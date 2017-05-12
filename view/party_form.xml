@@ -4,9 +4,9 @@
         expr="/form/notebook/page[@id='accounting']/field[@name='payable']"
         position="after">
         <separator string="ARBA" colspan="4" id="arba"/>
-        <label name="AlicuotaPercepcion"/>
-        <field name="AlicuotaPercepcion"/>
-        <label name="AlicuotaRetencion"/>
-        <field name="AlicuotaRetencion"/>
+        <label name="arba_perception"/>
+        <field name="arba_perception"/>
+        <label name="arba_retention"/>
+        <field name="arba_retention"/>
     </xpath>
 </data>
