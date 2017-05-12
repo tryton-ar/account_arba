@@ -3,6 +3,7 @@ from trytond.pool import Pool
 from . import account
 from . import configuration
 from . import party
+from . import invoice
 
 
 def register():
@@ -11,6 +12,7 @@ def register():
         account.WizardExportRN3811File,
         configuration.Configuration,
         party.Party,
+        invoice.Invoice,
         module='account_arba', type_='model')
     Pool.register(
         account.WizardExportRN3811,
