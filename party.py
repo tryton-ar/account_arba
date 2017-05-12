@@ -11,5 +11,7 @@ class Party:
     __metaclass__ = PoolMeta
     __name__ = 'party.party'
 
-    AlicuotaPercepcion = fields.Char('Perception', readonly=True)
-    AlicuotaRetencion = fields.Char('Retention', readonly=True)
+    AlicuotaPercepcion = fields.Numeric('Perception', digits=(16,2),
+        readonly=True)
+    AlicuotaRetencion = fields.Numeric('Retention', digits=(16,2),
+        readonly=True)

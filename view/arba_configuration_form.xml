@@ -4,5 +4,7 @@ this repository contains the full copyright notices and license terms. -->
 <form string="ARBA Configuration">
     <label name="password"/>
     <field name="password" widget="password"/>
+    <label name="arba_mode_cert"/>
+    <field name="arba_mode_cert" />
     <button name="import_census" string="Import census"/>
 </form>
