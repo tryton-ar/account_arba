@@ -130,7 +130,7 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
         """
         partys = Pool().get('party.party').search([
                 ('vat_number', '!=', None),
-                ], limit=200)
+                ])
 
         ws = cls.conect_arba()
         Date = Pool().get('ir.date')
@@ -143,9 +143,10 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
                 if data.AlicuotaPercepcion != '':
                     party.AlicuotaPercepcion = Decimal(data.AlicuotaPercepcion.replace(',','.'))
                 if data.AlicuotaRetencion != '':
-                    party.AlicuotaRetencion =  Decimal(data.AlicuotaRetencion.replace(',','.'))
-                    party.AlicuotaPercepcion = Decimal(data.AlicuotaPercepcion.replace(',','.'))
+                    party.arba_retencion =  Decimal(data.AlicuotaRetencion.replace(',','.'))
+                    party.arba_perception = Decimal(data.AlicuotaPercepcion.replace(',','.'))
                 party.save()
+                Transaction().cursor.commit()
 
     @classmethod
     def conect_arba(self):
@@ -179,47 +180,3 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
         logger.info('Start Scheduler start import arba census.')
         cls.import_census(args)
         logger.info('End Scheduler import arba census.')
-        return True
-
-    #@classmethod
-    #def assign_try_scheduler(cls, args=None):
-    #    '''
-    #    This method is intended to be called from ir.cron
-    #    args: warehouse ids [ids]
-    #    '''
-    #    pool = Pool()
-    #    Cron = pool.get('ir.cron')
-    #    ModelData = pool.get('ir.model.data')
-    #    ShipmentOut = pool.get('stock.shipment.out')
-
-    #    cron = Cron(ModelData.get_id('stock_shipment_out_autoassign',
-    #            'cron_shipment_out_assign_try_scheduler'))
-    #    from_date = cron.next_call - Cron.get_delta(cron)
-
-    #    domain = [
-    #        ('state', '=', 'waiting'),
-    #        ('write_date', '>=', from_date),
-    #        ]
-    #    if args:
-    #        domain.append(
-    #            ('id', 'in', args),
-    #            )
-
-    #    shipments_assigned = []
-    #    with Transaction().set_context(dblock=False):
-    #        shipments = ShipmentOut.search(domain)
-
-    #        logger.info(
-    #            'Scheduler Try Assign. Total: %s' % (len(shipments)))
-
-    #        while cls.stock_move_locked():
-    #            sleep(0.1)
-    #        for s in shipments:
-    #            shipment = ShipmentOut(s.id)
-    #            if ShipmentOut.assign_try([shipment]):
-    #                shipments_assigned.append(shipment)
-    #            Transaction().cursor.commit()
-
-    #        logger.info(
-    #            'End Scheduler Try Assign. Assigned: %s' % (len(shipments_assigned)))
-
