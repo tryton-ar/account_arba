@@ -11,10 +11,18 @@ class Invoice:
     __metaclass__ = PoolMeta
     __name__ = 'account.invoice'
 
-    arba_perception = fields.Numeric('Perception', digits=(16, 2),
-        readonly=True)
-    arba_retention = fields.Numeric('Retention', digits=(16, 2),
-        readonly=True)
+    arba_perception = fields.Function(fields.Numeric('Perception',
+            digits=(16, 2)), 'get_arba_percentage')
+    arba_retention = fields.Function(fields.Numeric('Retention',
+            digits=(16, 2)), 'get_arba_percentage')
+
+    def get_arba_percentage(self, name):
+        percentage = None
+        if name[5:] == 'perception':
+            percentage = self.party.arba_perception
+        else:
+            percentage = self.party.arba_retention
+        return percentage
 
     @fields.depends('arba_perception', 'arba_retention')
     def on_change_party(self):
