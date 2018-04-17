@@ -277,7 +277,7 @@ class WizardExportRN3811(Wizard):
 
         #invoice_type = {}
         #invoice_type['compras'] = ['in_invoice', 'in_credit_note']
-        ventas = ['out_invoice', 'out_credit_note']
+        ventas = ['out']
 
         domain = [
             ('state', 'in', ['posted', 'paid']),
@@ -399,16 +399,16 @@ class WizardExportRN3811(Wizard):
 
         # -- Campo 8: Importe percepcion. --
         # | Cantidad: 11 | Dato: Numérico |
-        if invoice.type == 'out_invoice':
+        if invoice.type == 'out':
             Cbte.monto_imponible = Cbte._format_number(invoice.untaxed_amount,
                    9, 3, include_sign=True)
             Cbte.importe_percepcion = Cbte._format_number(tax_amounts['iibb'],
                    8, 3, include_sign=True)
-        elif invoice.type == 'out_credit_note':
-            Cbte.monto_imponible = Cbte._format_number(invoice.untaxed_amount * -1,
-                   9, 3, include_sign=True)
-            Cbte.importe_percepcion = Cbte._format_number(tax_amounts['iibb'] * -1,
-                   8, 3, include_sign=True)
+        #elif invoice.type == 'out_credit_note':
+        #    Cbte.monto_imponible = Cbte._format_number(invoice.untaxed_amount * -1,
+        #           9, 3, include_sign=True)
+        #    Cbte.importe_percepcion = Cbte._format_number(tax_amounts['iibb'] * -1,
+        #           8, 3, include_sign=True)
 
         # -- Campo 9: Tipo de operacion
         # | Cantidad: 1 | Dato: Texto |
