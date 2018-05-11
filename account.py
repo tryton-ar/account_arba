@@ -284,6 +284,7 @@ class WizardExportRN3811(Wizard):
             ('type', 'in', ventas),
             ('invoice_date', '>=', self.start.start_date),
             ('invoice_date', '<=', self.start.end_date),
+            ('pos.pos_do_not_report', '=', False),
         ]
 
         invoices = Invoice.search(domain, order=[
