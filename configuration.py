@@ -137,13 +137,15 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
         _, end_date = monthrange(Date.today().year, Date.today().month)
         fecha_desde = Date.today().strftime('%Y%m') + '01'
         fecha_hasta = Date.today().strftime('%Y%m') + str(end_date)
+        logger.error('fecha_desde: %s | fecha_desde: %s.' % (fecha_desde, fecha_hasta))
         for party in partys:
             data = cls.get_arba_data(ws, party, fecha_desde, fecha_hasta)
             if data is not None:
+                logger.error('party: %s | AlicuotaPercepcion: %s.' % (party.vat_number, data.AlicuotaPercepcion))
                 if data.AlicuotaPercepcion != '':
                     party.AlicuotaPercepcion = Decimal(data.AlicuotaPercepcion.replace(',','.'))
                 if data.AlicuotaRetencion != '':
-                    party.arba_retencion =  Decimal(data.AlicuotaRetencion.replace(',','.'))
+                    party.arba_retention =  Decimal(data.AlicuotaRetencion.replace(',','.'))
                     party.arba_perception = Decimal(data.AlicuotaPercepcion.replace(',','.'))
                 party.save()
                 Transaction().cursor.commit()
