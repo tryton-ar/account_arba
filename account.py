@@ -282,8 +282,8 @@ class WizardExportRN3811(Wizard):
         domain = [
             ('state', 'in', ['posted', 'paid']),
             ('type', 'in', ventas),
-            ('invoice_date', '>=', self.start.start_date),
-            ('invoice_date', '<=', self.start.end_date),
+            ('move.date', '>=', self.start.start_date),
+            ('move.date', '<=', self.start.end_date),
             ('pos.pos_do_not_report', '=', False),
         ]
 
