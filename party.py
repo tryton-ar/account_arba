@@ -11,7 +11,7 @@ class Party:
     __metaclass__ = PoolMeta
     __name__ = 'party.party'
 
-    arba_perception = fields.Numeric('Perception', digits=(16,2),
+    arba_perception = fields.Numeric('Perception', digits=(16, 2),
         readonly=True)
-    arba_retention = fields.Numeric('Retention', digits=(16,2),
+    arba_retention = fields.Numeric('Retention', digits=(16, 2),
         readonly=True)

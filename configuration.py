@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 # This file is part of account_arba Tryton.
 # The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+
 from trytond.model import ModelView, ModelSQL, ModelSingleton, fields
 from trytond.pool import Pool
 from trytond.transaction import Transaction
@@ -24,18 +24,17 @@ __all__ = ['Configuration']
 
 class Configuration(ModelSingleton, ModelSQL, ModelView):
     'ARBA integration'
-
     __name__ = 'account.arba.configuration'
 
     password_hash = fields.Property(fields.Char('Password Hash'))
-    password = fields.Property(fields.Function(fields.Char('Password'), getter='get_password',
-        setter='set_password'))
+    password = fields.Property(fields.Function(fields.Char('Password'),
+            getter='get_password', setter='set_password'))
     arba_mode_cert = fields.Property(fields.Selection([
-           ('homologacion', u'Homologación'),
-           ('produccion', u'Producción'),
-       ], 'Modo de certificacion',
-       help=u"El objetivo de Homologación (testing), es facilitar las pruebas. \
-           Las claves de Homologación y Producción son distintos."))
+                ('homologacion', 'Homologation'),
+                ('produccion', 'Production'),
+                ], 'Modo de certificacion', help="El objetivo de Homologacion"
+            " (testing), es facilitar las pruebas. Las claves de Homologacion"
+            " y Produccion son distintos."))
 
     @classmethod
     def __setup__(cls):
@@ -137,16 +136,21 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
         _, end_date = monthrange(Date.today().year, Date.today().month)
         fecha_desde = Date.today().strftime('%Y%m') + '01'
         fecha_hasta = Date.today().strftime('%Y%m') + str(end_date)
-        logger.error('fecha_desde: %s | fecha_desde: %s.' % (fecha_desde, fecha_hasta))
+        logger.info('fecha_desde: %s | fecha_desde: %s.'
+            % (fecha_desde, fecha_hasta))
         for party in partys:
             data = cls.get_arba_data(ws, party, fecha_desde, fecha_hasta)
             if data is not None:
-                logger.error('party: %s | AlicuotaPercepcion: %s.' % (party.vat_number, data.AlicuotaPercepcion))
+                logger.error('party: %s | AlicuotaPercepcion: %s.'
+                    % (party.vat_number, data.AlicuotaPercepcion))
                 if data.AlicuotaPercepcion != '':
-                    party.AlicuotaPercepcion = Decimal(data.AlicuotaPercepcion.replace(',','.'))
+                    party.AlicuotaPercepcion = Decimal(
+                        data.AlicuotaPercepcion.replace(',', '.'))
                 if data.AlicuotaRetencion != '':
-                    party.arba_retention =  Decimal(data.AlicuotaRetencion.replace(',','.'))
-                    party.arba_perception = Decimal(data.AlicuotaPercepcion.replace(',','.'))
+                    party.arba_retention = Decimal(
+                        data.AlicuotaRetencion.replace(',', '.'))
+                    party.arba_perception = Decimal(
+                        data.AlicuotaPercepcion.replace(',', '.'))
                 party.save()
                 Transaction().cursor.commit()
 
@@ -157,7 +161,7 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
         config = Config(1)
         ws = iibb.IIBB()
         Party = Pool().get('party.party')
-        ws.Usuario =  Party(Transaction().context.get('company')).vat_number
+        ws.Usuario = Party(Transaction().context.get('company')).vat_number
         ws.Password = config.password
         if config.arba_mode_cert == 'homologacion':
             ws.Conectar()

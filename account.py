@@ -1,10 +1,11 @@
 # -*- encoding: utf-8 -*-
 from decimal import Decimal
 import stdnum.ar.cuit as cuit
+
 from trytond.model import fields, ModelView
 from trytond.wizard import Wizard, StateView, StateTransition, Button
 from trytond.pool import Pool
-#from trytond.modules.account_invoice_ar.invoice import TIPO_COMPROBANTE
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -19,11 +20,12 @@ class ExportArbaMixin(object):
         Formats the string into a fixed length ASCII (iso-8859-1) record.
 
         Note:
-            'Todos los campos alfanuméricos y alfabéticos se presentarán alineados
-            a la izquierda y rellenos de blancos por la derecha, en mayúsculas sin
-            caracteres especiales, y sin vocales acentuadas.
-            Para los caracteres específicos del idioma se utilizará la codificación
-            ISO-8859-1. De esta forma la letra “Ñ” tendrá el valor ASCII 209 (Hex.
+            'Todos los campos alfanuméricos y alfabéticos se presentarán
+            alineados a la izquierda y rellenos de blancos por la derecha,
+            en mayúsculas sin caracteres especiales, y sin vocales acentuadas.
+            Para los caracteres específicos del idioma se utilizará la
+            codificación ISO-8859-1. De esta forma la letra “Ñ”
+            tendrá el valor ASCII 209 (Hex.
             D1) y la “Ç”(cedilla mayúscula) el valor ASCII 199 (Hex. C7).'
         """
         #
@@ -38,7 +40,8 @@ class ExportArbaMixin(object):
         if len(ascii_string) > length:
             ascii_string = ascii_string[:length]
         # Format the string
-        # ascii_string = '{0:{1}{2}{3}s}'.format(ascii_string, fill, align, length)
+        # ascii_string = '{0:{1}{2}{3}s}'.format(ascii_string, fill, align,
+        # length)
         # for python >= 2.6
         if align == '<':
             ascii_string = str(ascii_string) + (
@@ -53,7 +56,8 @@ class ExportArbaMixin(object):
         #
         # Replace accents
         #
-        replacements = [('Á', 'A'), ('É', 'E'), ('Í', 'I'), ('Ó', 'O'), ('Ú', 'U')]
+        replacements = [('Á', 'A'), ('É', 'E'), ('Í', 'I'), ('Ó', 'O'),
+            ('Ú', 'U')]
         for orig, repl in replacements:
             ascii_string.replace(orig, repl)
         # Sanity-check
@@ -61,7 +65,6 @@ class ExportArbaMixin(object):
             ("The formated string must match the given length")
         # Return string
         return ascii_string
-
 
     def _format_number(self, number, int_length, dec_length=0,
             include_sign=False):
@@ -89,7 +92,8 @@ class ExportArbaMixin(object):
         if int_length > 0:
             ascii_string += '%.*d' % (int_length, abs(int_part))
         if dec_length > 0:
-            ascii_string += '.' + str(dec_part) + (dec_length - 1 - len(str(dec_part))) * '0'
+            ascii_string += '.' + str(dec_part) \
+                + (dec_length - 1 - len(str(dec_part))) * '0'
         if include_sign:
             ascii_string = sign + ascii_string[len(sign):]
         # Sanity-check
@@ -98,7 +102,6 @@ class ExportArbaMixin(object):
                 ascii_string,))
         # Return the string
         return ascii_string
-
 
     def _format_integer(self, value, length):
         res = ''.join([x for x in value if x in map(str, range(10))])[:length]
@@ -117,9 +120,9 @@ class ExportArbaMixin(object):
 
     def _check_vat_number(self, vat_number):
         """ Valida CUIT corto (sin separador) para Argentina. """
-        if (vat_number.isdigit()
-                and len(vat_number) == 11
-                and cuit.is_valid(vat_number)):
+        if (vat_number.isdigit() and
+                len(vat_number) == 11 and
+                cuit.is_valid(vat_number)):
             return True
         return False
 
@@ -236,7 +239,7 @@ class WizardExportRN3811Start(ModelView):
 class WizardExportRN3811File(ModelView):
     'Wizard Export RN3811 File'
     __name__ = 'account.export.rn3811.file'
-    lote12_file = fields.Binary(u'1.2. Percepciones Act. 7 método Percibido' \
+    lote12_file = fields.Binary(u'1.2. Percepciones Act. 7 método Percibido'
         '(quincenal)', readonly=True)
     message = fields.Text(u'Message', readonly=True)
 
@@ -275,8 +278,8 @@ class WizardExportRN3811(Wizard):
         pool = Pool()
         Invoice = pool.get('account.invoice')
 
-        #invoice_type = {}
-        #invoice_type['compras'] = ['in_invoice', 'in_credit_note']
+        # invoice_type = {}
+        # invoice_type['compras'] = ['in_invoice', 'in_credit_note']
         ventas = ['out']
 
         domain = [
@@ -300,7 +303,7 @@ class WizardExportRN3811(Wizard):
                 self._get_formated_record_lote12(invoice)
             if add_line:
                 file_contents_lote12 += aux_record
-            elif add_line == False and message != '':
+            elif add_line is False and message != '':
                 self.result.message += message
 
         #
@@ -315,7 +318,6 @@ class WizardExportRN3811(Wizard):
     # -------------------------------------------------------------------------
     # Actions
     # -------------------------------------------------------------------------
-
 
     def _get_formated_record_lote12(self, invoice):
         """ RN Nº 3811
@@ -350,15 +352,15 @@ class WizardExportRN3811(Wizard):
         if cuitOk:
             Cbte.cuit_contribuyente = cuitOk
         else:
-            return ('', False, 'ERROR: La factura %s de la entidad %s no '\
-                'tiene CUIT y no ha sido ingresada al listado' \
+            return ('', False, 'ERROR: La factura %s de la entidad %s no '
+                'tiene CUIT y no ha sido ingresada al listado'
                 % (invoice.number, invoice.party.name))
 
         # -- Campo 2: Fecha de percepción. --
         # | Cantidad: 10 | Dato: Fecha |
         # | Formato: dd/mm/aaaa |
-        Cbte.fecha_percepcion = (invoice.invoice_date
-            and invoice.invoice_date.strftime('%d/%m/%Y') or None)
+        Cbte.fecha_percepcion = (invoice.invoice_date and
+            invoice.invoice_date.strftime('%d/%m/%Y') or None)
         assert Cbte.fecha_percepcion, (
             'Falta "Fecha Comprobante"! (Campo 2)')
         Cbte.fecha_emision = Cbte.fecha_percepcion
