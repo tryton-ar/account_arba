@@ -42,7 +42,7 @@
 
         <menuitem name="ARBA Configuration" parent="menu_main_arba"
             id="menu_arba_configuration" action="act_arba_configuration_form"
-            icon="tryton-tree"/>
+            icon="tryton-menu"/>
 
     </data>
 </tryton>
