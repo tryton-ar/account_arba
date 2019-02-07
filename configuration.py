@@ -5,36 +5,29 @@
 from trytond.model import ModelView, ModelSQL, ModelSingleton, fields
 from trytond.pool import Pool
 from trytond.transaction import Transaction
+from trytond.model import ValueMixin
+from trytond import backend
+from trytond.tools.multivalue import migrate_property
+
 from calendar import monthrange
-import string
-import random
-import hashlib
 from pyafipws import iibb
 from decimal import Decimal
+
 import logging
 logger = logging.getLogger(__name__)
 
-try:
-    import bcrypt
-except ImportError:
-    bcrypt = None
 
-__all__ = ['Configuration']
+__all__ = ['Configuration', 'ConfigurationPassword', 'ConfigurationCert']
 
 
 class Configuration(ModelSingleton, ModelSQL, ModelView):
     'ARBA integration'
     __name__ = 'account.arba.configuration'
-
-    password_hash = fields.Property(fields.Char('Password Hash'))
-    password = fields.Property(fields.Function(fields.Char('Password'),
-            getter='get_password', setter='set_password'))
-    arba_mode_cert = fields.Property(fields.Selection([
+    password = fields.MultiValue(fields.Char('password'))
+    arba_mode_cert = fields.MultiValue(fields.Selection([
                 ('homologacion', 'Homologation'),
                 ('produccion', 'Production'),
-                ], 'Modo de certificacion', help="El objetivo de Homologacion"
-            " (testing), es facilitar las pruebas. Las claves de Homologacion"
-            " y Produccion son distintos."))
+                ], 'Modo de certificacion'))
 
     @classmethod
     def __setup__(cls):
@@ -49,77 +42,24 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
                 })
 
     @classmethod
-    def default_arba_mode_cert(cls):
-        return 'homologacion'
-
-    def get_password(self, name):
-        return 'x' * 10
-
-    @classmethod
-    def set_password(cls, users, name, value):
-        if value == 'x' * 10:
-            return
-        to_write = []
-        for user in users:
-            to_write.extend([[user], {
-                        'password_hash': cls.hash_password(value),
-                        }])
-        cls.write(*to_write)
-
-    @staticmethod
-    def hash_method():
-        return 'bcrypt' if bcrypt else 'sha1'
+    def multivalue_model(cls, field):
+        pool = Pool()
+        if field == 'password':
+            return pool.get('account_arba.configuration.password')
+        if field == 'arba_mode_cert':
+            return pool.get('account_arba.configuration.cert')
+        return super(Configuration, cls).multivalue_model(field)
 
     @classmethod
-    def hash_password(cls, password):
-        '''Hash given password in the form
-        <hash_method>$<password>$<salt>...'''
-        if not password:
-            return ''
-        return getattr(cls, 'hash_' + cls.hash_method())(password)
+    def default_password(cls, **pattern):
+        return cls.multivalue_model(
+            'password').default_password()
 
     @classmethod
-    def check_password(cls, password, hash_):
-        if not hash_:
-            return False
-        hash_method = hash_.split('$', 1)[0]
-        return getattr(cls, 'check_' + hash_method)(password, hash_)
+    def default_arba_mode_cert(cls, **pattern):
+        return cls.multivalue_model(
+            'arba_mode_cert').default_arba_mode_cert()
 
-    @classmethod
-    def hash_sha1(cls, password):
-        if isinstance(password, unicode):
-            password = password.encode('utf-8')
-        salt = ''.join(random.sample(string.ascii_letters + string.digits, 8))
-        hash_ = hashlib.sha1(password + salt).hexdigest()
-        return '$'.join(['sha1', hash_, salt])
-
-    @classmethod
-    def check_sha1(cls, password, hash_):
-        if isinstance(password, unicode):
-            password = password.encode('utf-8')
-        if isinstance(hash_, unicode):
-            hash_ = hash_.encode('utf-8')
-        hash_method, hash_, salt = hash_.split('$', 2)
-        salt = salt or ''
-        assert hash_method == 'sha1'
-        return hash_ == hashlib.sha1(password + salt).hexdigest()
-
-    @classmethod
-    def hash_bcrypt(cls, password):
-        if isinstance(password, unicode):
-            password = password.encode('utf-8')
-        hash_ = bcrypt.hashpw(password, bcrypt.gensalt())
-        return '$'.join(['bcrypt', hash_])
-
-    @classmethod
-    def check_bcrypt(cls, password, hash_):
-        if isinstance(password, unicode):
-            password = password.encode('utf-8')
-        if isinstance(hash_, unicode):
-            hash_ = hash_.encode('utf-8')
-        hash_method, hash_ = hash_.split('$', 1)
-        assert hash_method == 'bcrypt'
-        return hash_ == bcrypt.hashpw(password, hash_)
 
     @classmethod
     @ModelView.button
@@ -186,3 +126,47 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
         logger.info('Start Scheduler start import arba census.')
         cls.import_census(args)
         logger.info('End Scheduler import arba census.')
+
+
+class _ConfigurationValue(ModelSQL):
+
+    _configuration_value_field = None
+
+    @classmethod
+    def __register__(cls, module_name):
+        TableHandler = backend.get('TableHandler')
+        exist = TableHandler.table_exist(cls._table)
+
+        super(_ConfigurationValue, cls).__register__(module_name)
+
+        if not exist:
+            cls._migrate_property([], [], [])
+
+    @classmethod
+    def _migrate_property(cls, field_names, value_names, fields):
+        field_names.append(cls._configuration_value_field)
+        value_names.append(cls._configuration_value_field)
+        migrate_property(
+            'account_arba.configuration', field_names, cls, value_names,
+            fields=fields)
+
+
+class ConfigurationPassword(_ConfigurationValue, ModelSQL, ValueMixin):
+    'Configuration ARBA Password'
+    __name__ = 'account_arba.configuration.password'
+    password = fields.Char('Password')
+    _configuration_value_field = 'password'
+
+
+class ConfigurationCert(_ConfigurationValue, ModelSQL, ValueMixin):
+    'Configuration ARBA Cert'
+    __name__ = 'account_arba.configuration.cert'
+    arba_mode_cert = fields.Selection([
+                ('homologacion', 'Homologation'),
+                ('produccion', 'Production'),
+                ], 'Modo de certificacion')
+    _configuration_value_field = 'arba_mode_cert'
+
+    @classmethod
+    def default_arba_mode_cert(cls):
+        return 'homologacion'

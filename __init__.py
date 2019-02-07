@@ -11,6 +11,8 @@ def register():
         account.WizardExportRN3811Start,
         account.WizardExportRN3811File,
         configuration.Configuration,
+        configuration.ConfigurationPassword,
+        configuration.ConfigurationCert,
         party.Party,
         invoice.Invoice,
         module='account_arba', type_='model')
