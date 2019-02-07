@@ -35,7 +35,7 @@ class ExportArbaMixin(object):
     #       ascii_string = text.encode('iso-8859-1', 'ignore')
     #   else:
     #       ascii_string = str(text or '')
-        ascii_string = unicode(text).encode('ascii', 'replace')
+        ascii_string = str(text).encode('ascii', 'replace')
         # Cut the string if it is too long
         if len(ascii_string) > length:
             ascii_string = ascii_string[:length]
@@ -104,7 +104,7 @@ class ExportArbaMixin(object):
         return ascii_string
 
     def _format_integer(self, value, length):
-        res = ''.join([x for x in value if x in map(str, range(10))])[:length]
+        res = ''.join([x for x in value if x in list(map(str, list(range(10))))])[:length]
         res = str(res) + (length - len(str(res))) * ' '  # fill
         return res
 
@@ -239,9 +239,9 @@ class WizardExportRN3811Start(ModelView):
 class WizardExportRN3811File(ModelView):
     'Wizard Export RN3811 File'
     __name__ = 'account.export.rn3811.file'
-    lote12_file = fields.Binary(u'1.2. Percepciones Act. 7 método Percibido'
+    lote12_file = fields.Binary('1.2. Percepciones Act. 7 método Percibido'
         '(quincenal)', readonly=True)
-    message = fields.Text(u'Message', readonly=True)
+    message = fields.Text('Message', readonly=True)
 
 
 class WizardExportRN3811(Wizard):
@@ -311,7 +311,7 @@ class WizardExportRN3811(Wizard):
         #
         # tipo_archivo = self.start.csv_format and 'csv' or 'txt'
         # 'REGINFO_CV_%s_CBTE.%s'
-        self.result.lote12_file = unicode(
+        self.result.lote12_file = str(
             file_contents_lote12).encode('utf-8')
         return 'result'
 
@@ -330,11 +330,11 @@ class WizardExportRN3811(Wizard):
         Cbte = LoteImportacion12()
         tax_amounts = Cbte.taxes(invoice)
         if tax_amounts['iibb'] == Decimal('0'):
-            logger.info(u'La factura %s no tiene impuestos con IIBB',
+            logger.info('La factura %s no tiene impuestos con IIBB',
                 invoice.number)
             return ('', False, '')
 
-        logger.info(u'La factura %s tiene impuestos con IIBB',
+        logger.info('La factura %s tiene impuestos con IIBB',
             invoice.number)
 
         # -- Cálculo auxiliar para Campo 2, 3, 4 --

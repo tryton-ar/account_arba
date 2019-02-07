@@ -7,8 +7,7 @@ from trytond.pool import PoolMeta
 __all__ = ['Invoice']
 
 
-class Invoice:
-    __metaclass__ = PoolMeta
+class Invoice(metaclass=PoolMeta):
     __name__ = 'account.invoice'
 
     arba_perception = fields.Function(fields.Numeric('Perception',
