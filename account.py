@@ -132,25 +132,25 @@ class ExportArbaMixin(object):
           diccionario
         """
         res = {}
-        keys = ['iva', 'iibb', 'nacional', 'municipal', 'otros_tributos',
-                'exentos']
+        keys = ['gravado', 'provincial', 'nacional', 'municipal', 'interno',
+                'other']
         for k in keys:
             res[k] = Decimal('0.0')
 
         for line in invoice.taxes:
             tax = line.tax
-            if 'iva' in tax.group.code.lower():
-                res['iva'] += line.amount
-            elif 'iibb' in tax.group.code.lower():
-                res['iibb'] += line.amount
-            elif 'nacional' in tax.group.code.lower():
+            if tax.group.afip_kind == 'gravado':
+                res['gravado'] += line.amount
+            if tax.group.afip_kind == 'provincial':
+                res['provincial'] += line.amount
+            if tax.group.afip_kind == 'nacional':
                 res['nacional'] += line.amount
-            elif 'municipal' in tax.group.code.lower():
+            if tax.group.afip_kind == 'municipal':
                 res['municipal'] += line.amount
-            elif 'otros_tributos' in tax.group.code.lower():
-                res['otros_tributos'] += line.amount
-            elif 'exentos' in tax.group.code.lower():
-                res['exentos'] += line.base
+            if tax.group.afip_kind == 'interno':
+                res['interno'] += line.amount
+            if tax.group.afip_kind == 'other':
+                res['other'] += line.amount
 
         return res
 
@@ -329,7 +329,7 @@ class WizardExportRN3811(Wizard):
         """
         Cbte = LoteImportacion12()
         tax_amounts = Cbte.taxes(invoice)
-        if tax_amounts['iibb'] == Decimal('0'):
+        if tax_amounts['provincial'] == Decimal('0'):
             logger.info('La factura %s no tiene impuestos con IIBB',
                 invoice.number)
             return ('', False, '')
@@ -405,12 +405,12 @@ class WizardExportRN3811(Wizard):
         if invoice.type == 'out':
             Cbte.monto_imponible = Cbte._format_number(invoice.untaxed_amount,
                    9, 3, include_sign=True)
-            Cbte.importe_percepcion = Cbte._format_number(tax_amounts['iibb'],
+            Cbte.importe_percepcion = Cbte._format_number(tax_amounts['provincial'],
                    8, 3, include_sign=True)
         #elif invoice.type == 'out_credit_note':
         #    Cbte.monto_imponible = Cbte._format_number(invoice.untaxed_amount * -1,
         #           9, 3, include_sign=True)
-        #    Cbte.importe_percepcion = Cbte._format_number(tax_amounts['iibb'] * -1,
+        #    Cbte.importe_percepcion = Cbte._format_number(tax_amounts['provincial'] * -1,
         #           8, 3, include_sign=True)
 
         # -- Campo 9: Tipo de operacion
