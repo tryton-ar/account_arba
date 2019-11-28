@@ -8,6 +8,8 @@ from trytond.transaction import Transaction
 from trytond.model import ValueMixin
 from trytond import backend
 from trytond.tools.multivalue import migrate_property
+from trytond.modules.company.model import (CompanyValueMixin,
+    CompanyMultiValueMixin)
 
 from calendar import monthrange
 from pyafipws import iibb
@@ -20,7 +22,8 @@ logger = logging.getLogger(__name__)
 __all__ = ['Configuration', 'ConfigurationPassword', 'ConfigurationCert']
 
 
-class Configuration(ModelSingleton, ModelSQL, ModelView):
+class Configuration(
+        ModelSingleton, ModelSQL, ModelView, CompanyMultiValueMixin):
     'ARBA integration'
     __name__ = 'account.arba.configuration'
     password = fields.MultiValue(fields.Char('password'))
@@ -59,7 +62,6 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
     def default_arba_mode_cert(cls, **pattern):
         return cls.multivalue_model(
             'arba_mode_cert').default_arba_mode_cert()
-
 
     @classmethod
     @ModelView.button
@@ -151,14 +153,18 @@ class _ConfigurationValue(ModelSQL):
             fields=fields)
 
 
-class ConfigurationPassword(_ConfigurationValue, ModelSQL, ValueMixin):
+class ConfigurationPassword(_ConfigurationValue, ModelSQL, CompanyValueMixin):
     'Configuration ARBA Password'
     __name__ = 'account_arba.configuration.password'
     password = fields.Char('Password')
     _configuration_value_field = 'password'
 
+    @classmethod
+    def default_password(cls):
+        return ''
 
-class ConfigurationCert(_ConfigurationValue, ModelSQL, ValueMixin):
+
+class ConfigurationCert(_ConfigurationValue, ModelSQL, CompanyValueMixin):
     'Configuration ARBA Cert'
     __name__ = 'account_arba.configuration.cert'
     arba_mode_cert = fields.Selection([

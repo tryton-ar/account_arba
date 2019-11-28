@@ -170,3 +170,7 @@ msgstr "Cancelar"
 msgctxt "wizard_button:account.export.rn3811,start,export:"
 msgid "Export"
 msgstr "Exportar"
+
+msgctxt "model:ir.model.button,string:arba_import_census_button"
+msgid "Import census"
+msgstr "Importar padrón"
