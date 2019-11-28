@@ -34,6 +34,17 @@
             <field name="act_window" ref="act_arba_configuration_form"/>
         </record>
 
+        <record model="ir.model.button" id="arba_import_census_button">
+            <field name="name">import_census</field>
+            <field name="string">Import census</field>
+            <field name="model" search="[('model', '=', 'account.arba.configuration')]"/>
+        </record>
+        <record model="ir.model.button-res.group"
+            id="arba_import_census_button_group_account">
+            <field name="button" ref="arba_import_census_button"/>
+            <field name="group" ref="account.group_account"/>
+        </record>
+
         <menuitem id="menu_wiz_export_rn3811" name="Exports Report (RN3811)"
             action="wiz_export_rn3811" parent="account.menu_reporting"/>
 
