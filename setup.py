@@ -58,6 +58,8 @@ dependency_links = [
     'https://github.com/reingart/pyafipws/tarball/py3k#egg=pyafipws',
     'https://github.com/pysimplesoap/pysimplesoap/tarball/stable_py3k#egg=pysimplesoap',
     ]
+if minor_version % 2:
+    dependency_links.append('https://trydevpi.tryton.org/')
 
 setup(name=name,
     version=version,
