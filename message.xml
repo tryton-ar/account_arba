@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<tryton>
+    <data grouped="1">
+        <record model="ir.message" id="msg_arba_server_error">
+            <field name="text">ARBA Server error: "%(error)s"</field>
+        </record>
+        <record model="ir.message" id="msg_census_not_import">
+            <field name="text">There are not census to import</field>
+        </record>
+    </data>
+</tryton>

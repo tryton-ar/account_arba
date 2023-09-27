@@ -1,8 +1,5 @@
 <?xml version="1.0"?>
 <form>
-    <separator
-        string="This wizard will export invoicing data to a RN 3811 format file."
-        colspan="4" id="title"/>
     <label name="start_date"/>
     <field name="start_date"/>
     <label name="end_date"/>

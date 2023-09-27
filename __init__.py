@@ -1,21 +1,21 @@
-from trytond.pool import Pool
+# This file is part of the account_arba module for Tryton.
+# The COPYRIGHT file at the top level of this repository contains
+# the full copyright notices and license terms.
 
-from . import account
-from . import configuration
+from trytond.pool import Pool
+from . import company
 from . import party
-from . import invoice
+from . import arba
 
 
 def register():
     Pool.register(
-        account.WizardExportRN3811Start,
-        account.WizardExportRN3811File,
-        configuration.Configuration,
-        configuration.ConfigurationPassword,
-        configuration.ConfigurationCert,
+        company.Company,
         party.Party,
-        invoice.Invoice,
+        party.Cron,
+        arba.ExportARBARN3811Start,
+        arba.ExportARBARN3811Result,
         module='account_arba', type_='model')
     Pool.register(
-        account.WizardExportRN3811,
+        arba.ExportARBARN3811,
         module='account_arba', type_='wizard')

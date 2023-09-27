@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<tryton>
+    <data>
+
+<!-- Export ARBA RN Nº 38/11 Wizard -->
+
+        <record model="ir.ui.view" id="arba_rn3811_start_view_form">
+            <field name="model">arba.rn3811.start</field>
+            <field name="type">form</field>
+            <field name="name">arba_rn3811_start_form</field>
+        </record>
+        <record model="ir.ui.view" id="arba_rn3811_result_view_form">
+            <field name="model">arba.rn3811.result</field>
+            <field name="type">form</field>
+            <field name="name">arba_rn3811_result_form</field>
+        </record>
+
+        <record model="ir.action.wizard" id="wizard_arba_rn3811">
+            <field name="name">Retenciones y Percepciones de Ingresos Brutos (ARBA RN Nº 38/11)</field>
+            <field name="wiz_name">arba.rn3811</field>
+        </record>
+
+        <menuitem parent="account.menu_reporting" action="wizard_arba_rn3811"
+            id="menu_arba_rn3811" icon="tryton-export"/>
+
+    </data>
+</tryton>

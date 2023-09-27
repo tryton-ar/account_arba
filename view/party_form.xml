@@ -1,12 +1,8 @@
 <?xml version="1.0"?>
 <data>
     <xpath
-        expr="/form/notebook/page[@id='accounting']/field[@name='payable']"
+        expr="/form/notebook/page[@id='taxes']/field[@name='iibb_regimenes']"
         position="after">
-        <separator string="ARBA" colspan="4" id="arba"/>
-        <label name="arba_perception"/>
-        <field name="arba_perception"/>
-        <label name="arba_retention"/>
-        <field name="arba_retention"/>
+        <button name="get_arba_data" colspan="4" icon="tryton-import"/>
     </xpath>
 </data>

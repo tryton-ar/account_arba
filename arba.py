@@ -1,4 +1,7 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
+# This file is part of the account_arba module for Tryton.
+# The COPYRIGHT file at the top level of this repository contains
+# the full copyright notices and license terms.
 from decimal import Decimal
 import stdnum.ar.cuit as cuit
 
@@ -9,11 +12,8 @@ from trytond.pool import Pool
 import logging
 logger = logging.getLogger(__name__)
 
-__all__ = ['WizardExportRN3811Start', 'WizardExportRN3811File',
-    'WizardExportRN3811']
 
-
-class ExportArbaMixin(object):
+class ExportARBAMixin(object):
 
     def _format_string(self, text, length, fill=' ', align='<'):
         """
@@ -31,10 +31,10 @@ class ExportArbaMixin(object):
         #
         # Turn text (probably unicode) into an ASCII (iso-8859-1) string
         #
-    #   if isinstance(text, (unicode)):
-    #       ascii_string = text.encode('iso-8859-1', 'ignore')
-    #   else:
-    #       ascii_string = str(text or '')
+        #if isinstance(text, (unicode)):
+            #ascii_string = text.encode('iso-8859-1', 'ignore')
+        #else:
+            #ascii_string = str(text or '')
         ascii_string = str(text).encode('ascii', 'replace')
         # Cut the string if it is too long
         if len(ascii_string) > length:
@@ -104,7 +104,8 @@ class ExportArbaMixin(object):
         return ascii_string
 
     def _format_integer(self, value, length):
-        res = ''.join([x for x in value if x in list(map(str, list(range(10))))])[:length]
+        res = ''.join([x for x in value
+            if x in list(map(str, list(range(10))))])[:length]
         res = str(res) + (length - len(str(res))) * ' '  # fill
         return res
 
@@ -115,7 +116,7 @@ class ExportArbaMixin(object):
         if check and not self._check_vat_number(vat_number):
             return False
         vat_number = '-'.join([vat_number[:2], vat_number[2:-1],
-                vat_number[-1]])
+            vat_number[-1]])
         return vat_number
 
     def _check_vat_number(self, vat_number):
@@ -151,11 +152,10 @@ class ExportArbaMixin(object):
                 res['interno'] += line.amount
             if tax.group.afip_kind == 'other':
                 res['other'] += line.amount
-
         return res
 
 
-class RN3811(ExportArbaMixin):
+class RN3811(ExportARBAMixin):
     """ Registro general de campos.
 
     Resolución Normativa Nº 038/11
@@ -227,49 +227,39 @@ class LoteImportacion12(RN3811):
             ]
 
 
-class WizardExportRN3811Start(ModelView):
-    'Wizard Export RN3811 Start'
-    __name__ = 'account.export.rn3811.start'
+class ExportARBARN3811Start(ModelView):
+    'Retenciones y Percepciones de Ingresos Brutos (ARBA RN Nº 38/11)'
+    __name__ = 'arba.rn3811.start'
+
     start_date = fields.Date('Start date', required=True)
     end_date = fields.Date('End date', required=True)
     csv_format = fields.Boolean('CSV format',
         help='Check this box if you want export to csv format.')
 
 
-class WizardExportRN3811File(ModelView):
-    'Wizard Export RN3811 File'
-    __name__ = 'account.export.rn3811.file'
-    lote12_file = fields.Binary('1.2. Percepciones Act. 7 método Percibido'
-        '(quincenal)', readonly=True)
+class ExportARBARN3811Result(ModelView):
+    'Retenciones y Percepciones de Ingresos Brutos (ARBA RN Nº 38/11)'
+    __name__ = 'arba.rn3811.result'
+
+    lote12_file = fields.Binary(
+        '1.2. Percepciones Act. 7 método Percibido (quincenal)', readonly=True)
     message = fields.Text('Message', readonly=True)
 
 
-class WizardExportRN3811(Wizard):
-    'Wizard Export RN3811'
-    __name__ = 'account.export.rn3811'
+class ExportARBARN3811(Wizard):
+    'Retenciones y Percepciones de Ingresos Brutos (ARBA RN Nº 38/11)'
+    __name__ = 'arba.rn3811'
 
-    start = StateView('account.export.rn3811.start',
-        'account_arba.export_rn3811_start_view_form', [
+    start = StateView('arba.rn3811.start',
+        'account_arba.arba_rn3811_start_view_form', [
             Button('Cancel', 'end', 'tryton-cancel'),
-            Button('Export', 'export', 'tryton-ok', default=True),
+            Button('Export', 'export', 'tryton-forward', default=True),
             ])
     export = StateTransition()
-    result = StateView('account.export.rn3811.file',
-        'account_arba.export_rn3811_file_view_form', [
-            Button('Done', 'end', 'tryton-ok', default=True),
+    result = StateView('arba.rn3811.result',
+        'account_arba.arba_rn3811_result_view_form', [
+            Button('Close', 'end', 'tryton-close', default=True),
             ])
-
-    def default_result(self, fields):
-        lote12_file = self.result.lote12_file
-        message = self.result.message
-
-        self.result.lote12_file = False
-        self.result.message = False
-
-        return {
-            'lote12_file': lote12_file,
-            'message': message,
-            }
 
     def transition_export(self):
         """
@@ -278,29 +268,24 @@ class WizardExportRN3811(Wizard):
         pool = Pool()
         Invoice = pool.get('account.invoice')
 
-        # invoice_type = {}
-        # invoice_type['compras'] = ['in_invoice', 'in_credit_note']
-        ventas = ['out']
-
-        domain = [
-            ('state', 'in', ['posted', 'paid']),
-            ('type', 'in', ventas),
+        invoices = Invoice.search([
+            ('type', '=', 'out'),
+            ['OR', ('state', 'in', ['posted', 'paid']),
+                [('state', '=', 'cancelled'), ('number', '!=', None)]],
             ('move.date', '>=', self.start.start_date),
             ('move.date', '<=', self.start.end_date),
-            ('pos.pos_do_not_report', '=', False),
-        ]
-
-        invoices = Invoice.search(domain, order=[
-                ('number', 'ASC'),
-                ('invoice_date', 'ASC'),
-                ])
+            #('pos.pos_do_not_report', '=', False),
+            ], order=[
+            ('number', 'ASC'),
+            ('invoice_date', 'ASC'),
+            ])
 
         # Add the records
         file_contents_lote12 = ''
         self.result.message = ''
         for invoice in invoices:
-            aux_record, add_line, message = \
-                self._get_formated_record_lote12(invoice)
+            aux_record, add_line, message = self._get_formated_record_lote12(
+                invoice)
             if add_line:
                 file_contents_lote12 += aux_record
             elif add_line is False and message != '':
@@ -370,7 +355,6 @@ class WizardExportRN3811(Wizard):
         # | Formato: Valores F=Factura, R=Recibo,
         # | C=Nota Crédito, D=Nota Debito|
         tipo_comprobante = invoice.invoice_type.rec_name[0]
-
         if tipo_comprobante == 'N':
             tipo_comprobante = invoice.invoice_type.rec_name[8:9]
         Cbte.tipo_comprobante = tipo_comprobante
@@ -383,14 +367,14 @@ class WizardExportRN3811(Wizard):
         # -- Campo 5: Numero Sucursal. --
         # | Cantidad: 4 | Dato: Numerico |
         # | Formato: Mayor o igual a cero. Completar con ceros a la izq ' ' |
-        Cbte.nro_sucursal = Cbte._format_number(invoice.number.split('-')[0],
-               4, 0, include_sign=False)
+        Cbte.nro_sucursal = Cbte._format_number(
+            invoice.number.split('-')[0], 4, 0, include_sign=False)
 
         # -- Campo 6: Numero Emision. --
         # | Cantidad: 8 | Dato: Numerico |
         # | Formato: Mayor o igual a cero. Completar con ceros a la izq ' ' |
-        Cbte.nro_emision = Cbte._format_number(invoice.number.split('-')[1],
-               8, 0, include_sign=False)
+        Cbte.nro_emision = Cbte._format_number(
+            invoice.number.split('-')[1], 8, 0, include_sign=False)
 
         # -- Campo 7: Monto imponible. --
         # | Cantidad: 12,2 | Dato: Numerico |
@@ -403,18 +387,30 @@ class WizardExportRN3811(Wizard):
         # -- Campo 8: Importe percepcion. --
         # | Cantidad: 11 | Dato: Numérico |
         if invoice.type == 'out':
-            Cbte.monto_imponible = Cbte._format_number(invoice.untaxed_amount,
-                   9, 3, include_sign=True)
-            Cbte.importe_percepcion = Cbte._format_number(tax_amounts['provincial'],
-                   8, 3, include_sign=True)
+            Cbte.monto_imponible = Cbte._format_number(
+                invoice.untaxed_amount, 9, 3, include_sign=True)
+            Cbte.importe_percepcion = Cbte._format_number(
+                tax_amounts['provincial'], 8, 3, include_sign=True)
         #elif invoice.type == 'out_credit_note':
-        #    Cbte.monto_imponible = Cbte._format_number(invoice.untaxed_amount * -1,
-        #           9, 3, include_sign=True)
-        #    Cbte.importe_percepcion = Cbte._format_number(tax_amounts['provincial'] * -1,
-        #           8, 3, include_sign=True)
+        #    Cbte.monto_imponible = Cbte._format_number(
+        #        invoice.untaxed_amount * -1,9, 3, include_sign=True)
+        #    Cbte.importe_percepcion = Cbte._format_number(
+        #        tax_amounts['provincial'] * -1, 8, 3, include_sign=True)
 
         # -- Campo 9: Tipo de operacion
         # | Cantidad: 1 | Dato: Texto |
         Cbte.tipo_operacion = 'A'
 
         return (Cbte.a_text(self.start.csv_format), True, '')
+
+    def default_result(self, fields):
+        lote12_file = self.result.lote12_file
+        message = self.result.message
+
+        self.result.lote12_file = None
+        self.result.message = None
+
+        return {
+            'lote12_file': lote12_file,
+            'message': message,
+            }

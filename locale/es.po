@@ -1,176 +1,103 @@
-# 
+#
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
-msgctxt "error:account.arba.configuration:"
-msgid "ARBA server error: %(msg)s"
-msgstr "ARBA error servidor: %(msg)s"
-
-msgctxt "error:account.arba.configuration:"
-msgid "There are not census to import"
-msgstr "No hay padron para importar"
-
-msgctxt "field:account.arba.configuration,arba_mode_cert:"
-msgid "Modo de certificacion"
+msgctxt "field:arba.rn3811.result,lote12_file:"
+msgid "1.2. Percepciones Act. 7 método Percibido (quincenal)"
 msgstr ""
 
-#, fuzzy
-msgctxt "field:account.arba.configuration,create_date:"
-msgid "Create Date"
-msgstr "Fecha de Creación"
-
-#, fuzzy
-msgctxt "field:account.arba.configuration,create_uid:"
-msgid "Create User"
-msgstr "Usuario creación"
-
-#, fuzzy
-msgctxt "field:account.arba.configuration,id:"
-msgid "ID"
-msgstr "ID"
-
-#, fuzzy
-msgctxt "field:account.arba.configuration,password:"
-msgid "Password"
-msgstr "Contraseña"
-
-#, fuzzy
-msgctxt "field:account.arba.configuration,password_hash:"
-msgid "Password Hash"
-msgstr "Hash de contraseña"
-
-#, fuzzy
-msgctxt "field:account.arba.configuration,rec_name:"
-msgid "Name"
-msgstr "Nombre del campo"
-
-#, fuzzy
-msgctxt "field:account.arba.configuration,write_date:"
-msgid "Write Date"
-msgstr "Fecha modificación"
-
-#, fuzzy
-msgctxt "field:account.arba.configuration,write_uid:"
-msgid "Write User"
-msgstr "Usuario modificación"
-
-#, fuzzy
-msgctxt "field:account.export.rn3811.file,id:"
-msgid "ID"
-msgstr "ID"
-
-msgctxt "field:account.export.rn3811.file,lote12_file:"
-msgid "1.2. Percepciones Act. 7 método Percibido(quincenal)"
-msgstr ""
-
-#, fuzzy
-msgctxt "field:account.export.rn3811.file,message:"
+msgctxt "field:arba.rn3811.result,message:"
 msgid "Message"
 msgstr "Mensaje"
 
-msgctxt "field:account.export.rn3811.start,csv_format:"
+msgctxt "field:arba.rn3811.start,csv_format:"
 msgid "CSV format"
 msgstr "Formato CSV"
 
-msgctxt "field:account.export.rn3811.start,end_date:"
+msgctxt "field:arba.rn3811.start,end_date:"
 msgid "End date"
-msgstr "Fecha de finalización"
+msgstr "Fecha hasta"
 
-#, fuzzy
-msgctxt "field:account.export.rn3811.start,id:"
-msgid "ID"
-msgstr "ID"
-
-#, fuzzy
-msgctxt "field:account.export.rn3811.start,period:"
-msgid "Period"
-msgstr "Período"
-
-msgctxt "field:account.export.rn3811.start,start_date:"
+msgctxt "field:arba.rn3811.start,start_date:"
 msgid "Start date"
-msgstr "Fecha de comienzo"
+msgstr "Fecha desde"
 
-msgctxt "field:party.party,arba_perception:"
-msgid "Perception"
-msgstr "Percepción"
+msgctxt "field:company.company,arba_mode_cert:"
+msgid "Modo de certificacion"
+msgstr "Modo de certificación"
 
-msgctxt "field:party.party,arba_retention:"
-msgid "Retention"
-msgstr "Retención"
+msgctxt "field:company.company,arba_password:"
+msgid "Password"
+msgstr "Contraseña"
 
-msgctxt "help:account.arba.configuration,arba_mode_cert:"
-msgid ""
-"El objetivo de Homologación (testing), es facilitar las pruebas.            "
-"Las claves de Homologación y Producción son distintos."
+msgctxt "field:company.company,arba_regimen_retencion:"
+msgid "Régimen ARBA"
 msgstr ""
 
-msgctxt "help:account.export.rn3811.start,csv_format:"
+msgctxt "help:arba.rn3811.start,csv_format:"
 msgid "Check this box if you want export to csv format."
-msgstr "Tilda si desea exportar a formato CSV"
+msgstr "Marque aquí si quiere exportar a formato CSV"
 
-msgctxt "model:account.arba.configuration,name:"
-msgid "ARBA integration"
-msgstr "Integración ARBA"
-
-msgctxt "model:account.export.rn3811.file,name:"
-msgid "Wizard Export RN3811 File"
-msgstr "Asistente exportación RN3811"
-
-msgctxt "model:account.export.rn3811.start,name:"
-msgid "Wizard Export RN3811 Start"
-msgstr "Asistente exportación RN3811"
-
-msgctxt "model:ir.action,name:act_arba_configuration_form"
-msgid "ARBA Configuration"
-msgstr "Configuración ARBA"
-
-msgctxt "model:ir.action,name:wiz_export_rn3811"
-msgid "Exports Report (RN3811)"
-msgstr "Exportar percepciones (RN3811)"
-
-msgctxt "model:ir.cron,name:cron_arba_census_scheduler"
-msgid "Import ARBA Census"
-msgstr "Importar Padrón"
-
-msgctxt "model:ir.ui.menu,name:menu_arba_configuration"
-msgid "ARBA Configuration"
-msgstr "Configuración ARBA"
-
-msgctxt "model:ir.ui.menu,name:menu_main_arba"
-msgid "ARBA"
-msgstr "ARBA"
-
-msgctxt "model:ir.ui.menu,name:menu_wiz_export_rn3811"
-msgid "Exports Report (RN3811)"
-msgstr "Exportar percepciones (RN3811)"
-
-msgctxt "model:res.user,name:user_arba"
-msgid "Cron ARBA"
+msgctxt "model:arba.rn3811.result,name:"
+msgid "Retenciones y Percepciones de Ingresos Brutos (ARBA RN Nº 38/11)"
 msgstr ""
 
-msgctxt "selection:account.arba.configuration,arba_mode_cert:"
+msgctxt "model:arba.rn3811.start,name:"
+msgid "Retenciones y Percepciones de Ingresos Brutos (ARBA RN Nº 38/11)"
+msgstr ""
+
+msgctxt "model:ir.action,name:wizard_arba_rn3811"
+msgid "Retenciones y Percepciones de Ingresos Brutos (ARBA RN Nº 38/11)"
+msgstr ""
+
+msgctxt "model:ir.message,text:msg_arba_server_error"
+msgid "ARBA Server error: \"%(error)s\""
+msgstr "Error Servidor ARBA: \"%(error)s\""
+
+msgctxt "model:ir.message,text:msg_census_not_import"
+msgid "There are not census to import"
+msgstr "No hay padrón para importar"
+
+msgctxt "model:ir.model.button,string:party_get_arba_data_button"
+msgid "Get ARBA Data"
+msgstr "Obtener datos ARBA"
+
+msgctxt "model:ir.ui.menu,name:menu_arba_rn3811"
+msgid "Retenciones y Percepciones de Ingresos Brutos (ARBA RN Nº 38/11)"
+msgstr ""
+
+msgctxt "selection:company.company,arba_mode_cert:"
 msgid "Homologación"
 msgstr ""
 
-msgctxt "selection:account.arba.configuration,arba_mode_cert:"
+msgctxt "selection:company.company,arba_mode_cert:"
 msgid "Producción"
 msgstr ""
 
-#, fuzzy
-msgctxt "wizard_button:account.export.rn3811,result,end:"
-msgid "Done"
-msgstr "Realizado"
+msgctxt "selection:company.company,arba_mode_cert:"
+msgid "n/a"
+msgstr ""
 
-#, fuzzy
-msgctxt "wizard_button:account.export.rn3811,start,end:"
+msgctxt "selection:ir.cron,method:"
+msgid "Import ARBA Census"
+msgstr "Importar Padrón ARBA"
+
+msgctxt "view:arba.rn3811.result:"
+msgid "Message"
+msgstr "Mensaje"
+
+msgctxt "view:company.company:"
+msgid "ARBA WS"
+msgstr ""
+
+msgctxt "wizard_button:arba.rn3811,result,end:"
+msgid "Close"
+msgstr "Cerrar"
+
+msgctxt "wizard_button:arba.rn3811,start,end:"
 msgid "Cancel"
 msgstr "Cancelar"
 
-#, fuzzy
-msgctxt "wizard_button:account.export.rn3811,start,export:"
+msgctxt "wizard_button:arba.rn3811,start,export:"
 msgid "Export"
 msgstr "Exportar"
-
-msgctxt "model:ir.model.button,string:arba_import_census_button"
-msgid "Import census"
-msgstr "Importar padrón"
