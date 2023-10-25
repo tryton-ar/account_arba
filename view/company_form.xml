@@ -8,6 +8,8 @@
             <field name="arba_password" widget="password"/>
             <label name="arba_regimen_retencion"/>
             <field name="arba_regimen_retencion"/>
+            <label name="arba_regimen_percepcion"/>
+            <field name="arba_regimen_percepcion"/>
         </page>
     </xpath>
 </data>

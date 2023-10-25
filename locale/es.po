@@ -30,8 +30,12 @@ msgctxt "field:company.company,arba_password:"
 msgid "Password"
 msgstr "Contraseña"
 
+msgctxt "field:company.company,arba_regimen_percepcion:"
+msgid "Régimen Percepción ARBA"
+msgstr ""
+
 msgctxt "field:company.company,arba_regimen_retencion:"
-msgid "Régimen ARBA"
+msgid "Régimen Retención ARBA"
 msgstr ""
 
 msgctxt "help:arba.rn3811.start,csv_format:"

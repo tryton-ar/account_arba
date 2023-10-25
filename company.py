@@ -16,8 +16,14 @@ class Company(metaclass=PoolMeta):
         ('produccion', 'Producción'),
         ], 'Modo de certificacion', sort=False)
     arba_regimen_retencion = fields.Many2One('account.retencion',
-        'Régimen ARBA',
+        'Régimen Retención ARBA',
         domain=[('type', '=', 'efectuada'), ('tax', '=', 'iibb')])
+    arba_regimen_percepcion = fields.Many2One('account.tax',
+        'Régimen Percepción ARBA',
+        domain=[
+            ('group.afip_kind', '=', 'provincial'),
+            ('group.kind', '=', 'sale'),
+            ])
 
     @staticmethod
     def default_arba_mode_cert():
