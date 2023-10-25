@@ -43,7 +43,8 @@ class Party(metaclass=PoolMeta):
 
         company = Company(Transaction().context['company'])
         arba_regimen_retencion = company.arba_regimen_retencion
-        if not arba_regimen_retencion:
+        arba_regimen_percepcion = company.arba_regimen_percepcion
+        if not arba_regimen_retencion and not arba_regimen_percepcion:
             return
 
         today = Date.today()
@@ -61,16 +62,20 @@ class Party(metaclass=PoolMeta):
             if data is None:
                 continue
 
-            iibb_regimenes = PartyWithholdingIIBB.search([
-                ('party', '=', party),
-                ('regimen_retencion', '=', arba_regimen_retencion),
-                ])
+            clause = [('party', '=', party)]
+            if arba_regimen_retencion:
+                clause.append(('regimen_retencion', '=', arba_regimen_retencion))
+            if arba_regimen_percepcion:
+                clause.append(('regimen_percepcion', '=', arba_regimen_percepcion))
+            iibb_regimenes = PartyWithholdingIIBB.search(clause)
             if iibb_regimenes:
                 arba_regimen = iibb_regimenes[0]
             else:
                 arba_regimen = PartyWithholdingIIBB(
                     party=party,
-                    regimen_retencion=arba_regimen_retencion)
+                    regimen_retencion=arba_regimen_retencion,
+                    regimen_percepcion=arba_regimen_percepcion,
+                    )
             iibb_rate_percepcion = data.AlicuotaPercepcion
             iibb_rate_retencion = data.AlicuotaRetencion
             logger.info('Party: %s | Percepción: %s | Retención: %s' %
