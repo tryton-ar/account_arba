@@ -242,7 +242,9 @@ class ExportARBARN3811Result(ModelView):
     __name__ = 'arba.rn3811.result'
 
     lote12_file = fields.Binary(
-        '1.2. Percepciones Act. 7 método Percibido (quincenal)', readonly=True)
+        '1.2. Percepciones Act. 7 método Percibido (quincenal)',
+        filename='file_name', readonly=True)
+    file_name = fields.Char('Name')
     message = fields.Text('Message', readonly=True)
 
 
@@ -406,11 +408,16 @@ class ExportARBARN3811(Wizard):
     def default_result(self, fields):
         lote12_file = self.result.lote12_file
         message = self.result.message
+        file_name = 'Percepciones_%s-%s.%s' % (
+            self.start.start_date.strftime('%Y%m%d'),
+            self.start.end_date.strftime('%Y%m%d'),
+            'csv' if self.start.csv_format else 'txt')
 
         self.result.lote12_file = None
         self.result.message = None
 
         return {
             'lote12_file': lote12_file,
+            'file_name': file_name,
             'message': message,
             }
