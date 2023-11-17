@@ -6,6 +6,10 @@ msgctxt "field:arba.rn3811.result,lote12_file:"
 msgid "1.2. Percepciones Act. 7 método Percibido (quincenal)"
 msgstr ""
 
+msgctxt "field:arba.rn3811.result,file_name:"
+msgid "Name"
+msgstr "Nombre"
+
 msgctxt "field:arba.rn3811.result,message:"
 msgid "Message"
 msgstr "Mensaje"
