@@ -62,7 +62,7 @@ LINKS = {
         (major_version, minor_version, major_version, minor_version)),
     }
 
-requires = ['M2Crypto>=0.22.3']
+requires = []
 for dep in info.get('depends', []):
     if not re.match(r'(ir|res)(\W|$)', dep):
         module_name = '%s_%s' % (MODULE2PREFIX.get(dep, 'trytond'), dep)
