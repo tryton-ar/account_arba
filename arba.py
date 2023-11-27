@@ -8,12 +8,19 @@ import stdnum.ar.cuit as cuit
 from trytond.model import fields, ModelView
 from trytond.wizard import Wizard, StateView, StateTransition, Button
 from trytond.pool import Pool
+from trytond.transaction import Transaction
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class ExportARBAMixin(object):
+class ARBARN3811(object):
+    """ Registro general de campos.
+
+    Resolución Normativa Nº 038/11
+    http://www.arba.gov.ar/Apartados/Agentes/InstructivoMarcoNormativo.asp
+    """
+    _EOL = '\r\n'
 
     def _format_string(self, text, length, fill=' ', align='<'):
         """
@@ -28,21 +35,15 @@ class ExportARBAMixin(object):
             tendrá el valor ASCII 209 (Hex.
             D1) y la “Ç”(cedilla mayúscula) el valor ASCII 199 (Hex. C7).'
         """
-        #
+
         # Turn text (probably unicode) into an ASCII (iso-8859-1) string
-        #
-        #if isinstance(text, (unicode)):
-            #ascii_string = text.encode('iso-8859-1', 'ignore')
-        #else:
-            #ascii_string = str(text or '')
         ascii_string = str(text).encode('ascii', 'replace')
+
         # Cut the string if it is too long
         if len(ascii_string) > length:
             ascii_string = ascii_string[:length]
+
         # Format the string
-        # ascii_string = '{0:{1}{2}{3}s}'.format(ascii_string, fill, align,
-        # length)
-        # for python >= 2.6
         if align == '<':
             ascii_string = str(ascii_string) + (
                 length - len(str(ascii_string))) * fill
@@ -51,19 +52,20 @@ class ExportARBAMixin(object):
                 ascii_string)
         else:
             assert False, ('Wrong aling option. It should be < or >')
+
         # Turn into uppercase
         ascii_string = ascii_string.upper()
-        #
+
         # Replace accents
-        #
         replacements = [('Á', 'A'), ('É', 'E'), ('Í', 'I'), ('Ó', 'O'),
             ('Ú', 'U')]
         for orig, repl in replacements:
             ascii_string.replace(orig, repl)
+
         # Sanity-check
         assert len(ascii_string) == length, \
             ("The formated string must match the given length")
-        # Return string
+
         return ascii_string
 
     def _format_number(self, number, int_length, dec_length=0,
@@ -74,10 +76,9 @@ class ExportARBAMixin(object):
             'Todos los campos numéricos se presentarán alineados a la derecha
             y rellenos a ceros por la izquierda sin signos y sin empaquetar.'
         """
-        #
+
         # Separate the number parts
         # (-55.23 => int_part=55, dec_part=0.23, sign='-')
-        #
         if number == '':
             number = 0
         _number = str(float(number))
@@ -85,9 +86,8 @@ class ExportARBAMixin(object):
         int_part = int(float(_number))
         dec_part = _number[_number.find('.') + 1:]
         sign = int_part < 0 and '-' or ''
-        #
+
         # Format the string
-        #
         ascii_string = ''
         if int_length > 0:
             ascii_string += '%.*d' % (int_length, abs(int_part))
@@ -96,11 +96,12 @@ class ExportARBAMixin(object):
                 + (dec_length - 1 - len(str(dec_part))) * '0'
         if include_sign:
             ascii_string = sign + ascii_string[len(sign):]
+
         # Sanity-check
         assert len(ascii_string) == int_length + dec_length, \
             ("The formated string (%s) must match the given length" % (
                 ascii_string,))
-        # Return the string
+
         return ascii_string
 
     def _format_integer(self, value, length):
@@ -127,41 +128,12 @@ class ExportARBAMixin(object):
             return True
         return False
 
-    def taxes(self, invoice):
-        """ Acumula los importes de las líneas de cada factura.
-        Devuelve:
-          diccionario
-        """
-        res = {}
-        keys = ['gravado', 'provincial', 'nacional', 'municipal', 'interno',
-                'other']
-        for k in keys:
-            res[k] = Decimal('0.0')
-
+    def get_tax_amount(self, invoice, tax):
+        res = Decimal('0.0')
         for line in invoice.taxes:
-            tax = line.tax
-            if tax.group.afip_kind == 'gravado':
-                res['gravado'] += line.amount
-            if tax.group.afip_kind == 'provincial':
-                res['provincial'] += line.amount
-            if tax.group.afip_kind == 'nacional':
-                res['nacional'] += line.amount
-            if tax.group.afip_kind == 'municipal':
-                res['municipal'] += line.amount
-            if tax.group.afip_kind == 'interno':
-                res['interno'] += line.amount
-            if tax.group.afip_kind == 'other':
-                res['other'] += line.amount
+            if line.tax == tax:
+                res += line.amount
         return res
-
-
-class RN3811(ExportARBAMixin):
-    """ Registro general de campos.
-
-    Resolución Normativa Nº 038/11
-    http://www.arba.gov.ar/Apartados/Agentes/InstructivoMarcoNormativo.asp
-    """
-    _EOL = '\r\n'
 
     def ordered_fields(self):
         """ Devuelve lista de campos ordenados """
@@ -178,7 +150,7 @@ class RN3811(ExportARBAMixin):
         return text
 
 
-class LoteImportacion12(RN3811):
+class LoteImportacion12(ARBARN3811):
     """ Registro de campos que conforman una alícuota de un comprobante.
 
     Resolución Normativa Nº 038/11
@@ -186,10 +158,7 @@ class LoteImportacion12(RN3811):
     """
 
     def __init__(self):
-        """ Declara los campos según el tipo de informe.
-        """
         super(LoteImportacion12, self).__init__()
-
         # Campo 1: Cuit Contribuyente percibido.
         self.cuit_contribuyente = None
         # Campo 2: Fecha percepción.
@@ -212,7 +181,6 @@ class LoteImportacion12(RN3811):
         self.tipo_operacion = None
 
     def ordered_fields(self):
-        """ Devuelve lista de campos ordenados """
         return [
             self.cuit_contribuyente,
             self.fecha_percepcion,
@@ -223,6 +191,36 @@ class LoteImportacion12(RN3811):
             self.monto_imponible,
             self.importe_percepcion,
             self.fecha_emision,
+            self.tipo_operacion,
+            ]
+
+
+class LoteImportacion19(ARBARN3811):
+    """ Registro de campos que conforman una alícuota de un comprobante.
+
+    Resolución Normativa Nº 038/11
+    1.9. Retenciones Act. 6 de Bancos
+    """
+
+    def __init__(self):
+        super(LoteImportacion19, self).__init__()
+        # Campo 1: Cuit Contribuyente retenido.
+        self.cuit_contribuyente = None
+        # Campo 2: Monto imponible.
+        self.monto_imponible = None
+        # Campo 3: Importe Retención.
+        self.importe_retencion = None
+        # Campo 4: Fecha Retención.
+        self.fecha_retencion = None
+        # Campo 5: Tipo operación.
+        self.tipo_operacion = None
+
+    def ordered_fields(self):
+        return [
+            self.cuit_contribuyente,
+            self.monto_imponible,
+            self.importe_retencion,
+            self.fecha_retencion,
             self.tipo_operacion,
             ]
 
@@ -243,8 +241,12 @@ class ExportARBARN3811Result(ModelView):
 
     lote12_file = fields.Binary(
         '1.2. Percepciones Act. 7 método Percibido (quincenal)',
-        filename='file_name', readonly=True)
-    file_name = fields.Char('Name')
+        filename='lote12_filename', readonly=True)
+    lote12_filename = fields.Char('Name')
+    lote19_file = fields.Binary(
+        '1.9. Retenciones Act. 6 de Bancos',
+        filename='lote19_filename', readonly=True)
+    lote19_filename = fields.Char('Name')
     message = fields.Text('Message', readonly=True)
 
 
@@ -268,8 +270,18 @@ class ExportARBARN3811(Wizard):
         Action that exports the data into a formated text file.
         """
         pool = Pool()
+        Company = pool.get('company.company')
         Invoice = pool.get('account.invoice')
+        TaxWithholdingSubmitted = pool.get('account.retencion.efectuada')
 
+        company = Company(Transaction().context['company'])
+        arba_regimen_percepcion = company.arba_regimen_percepcion
+        arba_regimen_retencion = company.arba_regimen_retencion
+
+        self.result.message = ''
+
+        # 1.2. Percepciones Act. 7 método Percibido (quincenal)
+        file_contents_lote12 = ''
         invoices = Invoice.search([
             ('type', '=', 'out'),
             ['OR', ('state', 'in', ['posted', 'paid']),
@@ -281,32 +293,40 @@ class ExportARBARN3811(Wizard):
             ('number', 'ASC'),
             ('invoice_date', 'ASC'),
             ])
-
-        # Add the records
-        file_contents_lote12 = ''
-        self.result.message = ''
         for invoice in invoices:
             aux_record, add_line, message = self._get_formated_record_lote12(
-                invoice)
+                invoice, arba_regimen_percepcion)
             if add_line:
                 file_contents_lote12 += aux_record
-            elif add_line is False and message != '':
-                self.result.message += message
-
-        #
-        # Generate the file and save as attachment
-        #
-        # tipo_archivo = self.start.csv_format and 'csv' or 'txt'
-        # 'REGINFO_CV_%s_CBTE.%s'
+            if message:
+                self.result.message += message + '\n'
         self.result.lote12_file = str(
             file_contents_lote12).encode('utf-8')
+
+        # 1.9. Retenciones Act. 6 de Bancos
+        file_contents_lote19 = ''
+        retenciones = TaxWithholdingSubmitted.search([
+            ('tax', '=', arba_regimen_retencion),
+            ('date', '>=', self.start.start_date),
+            ('date', '<=', self.start.end_date),
+            ('state', '=', 'issued'),
+            ], order=[
+            ('date', 'ASC'),
+            ('name', 'ASC'),
+            ])
+        for retencion in retenciones:
+            aux_record, add_line, message = self._get_formated_record_lote19(
+                retencion)
+            if add_line:
+                file_contents_lote19 += aux_record
+            if message:
+                self.result.message += message + '\n'
+        self.result.lote19_file = str(
+            file_contents_lote19).encode('utf-8')
+
         return 'result'
 
-    # -------------------------------------------------------------------------
-    # Actions
-    # -------------------------------------------------------------------------
-
-    def _get_formated_record_lote12(self, invoice):
+    def _get_formated_record_lote12(self, invoice, arba_regimen_percepcion):
         """ RN Nº 3811
         1.2. Percepciones Act. 7 método Percibido (quincenal)
 
@@ -315,14 +335,11 @@ class ExportARBARN3811(Wizard):
          - add_line (False or True)
         """
         Cbte = LoteImportacion12()
-        tax_amounts = Cbte.taxes(invoice)
-        if tax_amounts['provincial'] == Decimal('0'):
-            logger.info('La factura %s no tiene impuestos con IIBB',
+        tax_amount = Cbte.get_tax_amount(invoice, arba_regimen_percepcion)
+        if tax_amount == Decimal('0'):
+            logger.info('La factura %s no tiene percepción de IIBB BSAS',
                 invoice.number)
             return ('', False, '')
-
-        logger.info('La factura %s tiene impuestos con IIBB',
-            invoice.number)
 
         # -- Cálculo auxiliar para Campo 2, 3, 4 --
         ref = invoice.reference or invoice.number
@@ -340,7 +357,7 @@ class ExportARBARN3811(Wizard):
             Cbte.cuit_contribuyente = cuitOk
         else:
             return ('', False, 'ERROR: La factura %s de la entidad %s no '
-                'tiene CUIT y no ha sido ingresada al listado'
+                'tiene CUIT. Fue quitada del listado.'
                 % (invoice.number, invoice.party.name))
 
         # -- Campo 2: Fecha de percepción. --
@@ -392,12 +409,12 @@ class ExportARBARN3811(Wizard):
             Cbte.monto_imponible = Cbte._format_number(
                 invoice.untaxed_amount, 9, 3, include_sign=True)
             Cbte.importe_percepcion = Cbte._format_number(
-                tax_amounts['provincial'], 8, 3, include_sign=True)
+                tax_amount, 8, 3, include_sign=True)
         #elif invoice.type == 'out_credit_note':
         #    Cbte.monto_imponible = Cbte._format_number(
         #        invoice.untaxed_amount * -1,9, 3, include_sign=True)
         #    Cbte.importe_percepcion = Cbte._format_number(
-        #        tax_amounts['provincial'] * -1, 8, 3, include_sign=True)
+        #        tax_amount * -1, 8, 3, include_sign=True)
 
         # -- Campo 9: Tipo de operacion
         # | Cantidad: 1 | Dato: Texto |
@@ -405,19 +422,76 @@ class ExportARBARN3811(Wizard):
 
         return (Cbte.a_text(self.start.csv_format), True, '')
 
+    def _get_formated_record_lote19(self, retencion):
+        """ RN Nº 3811
+        1.9. Retenciones Act. 6 de Bancos
+
+        Devuelve tupla con dos posiciones con los siguientes valores:
+         - Campos del Comprobante concatenados en una cadena de texto.
+         - add_line (False or True)
+        """
+        Cbte = LoteImportacion19()
+
+        # -- Campo 1: Cuit Contribuyente retenido. --
+        # | Cantidad: 13 | Dato: Alfanumérico |
+        cuitOk = Cbte._format_vat_number(retencion.party.vat_number)
+        if cuitOk:
+            Cbte.cuit_contribuyente = cuitOk
+        else:
+            return ('', False, 'ERROR: La retención %s de la entidad %s no '
+                'tiene CUIT. Fue quitada del listado.'
+                % (retencion.name, retencion.party.name))
+
+        # -- Campo 2: Monto imponible. --
+        # | Cantidad: 12,2 | Dato: Numerico |
+        # | Formato: Seprador Decimal (,) o (.).
+        # | Siempre mayor a cero.
+        # | Completar con ceros a la izquierda.
+        if retencion.payment_amount:
+            Cbte.monto_imponible = Cbte._format_number(
+                retencion.payment_amount, 9, 3, include_sign=True)
+        else:
+            return ('', False, 'ERROR: La retención %s de la entidad %s no '
+                'tiene Monto imponible. Fue quitada del listado.'
+                % (retencion.name, retencion.party.name))
+
+        # -- Campo 3: Importe Retención. --
+        # | Cantidad: 11 | Dato: Numérico |
+        Cbte.importe_retencion = Cbte._format_number(
+            retencion.amount, 8, 3, include_sign=True)
+
+        # -- Campo 4: Fecha Retención. --
+        # | Cantidad: 10 | Dato: Fecha |
+        # | Formato: dd/mm/aaaa |
+        Cbte.fecha_retencion = retencion.date.strftime('%d/%m/%Y')
+
+        # -- Campo 5: Tipo operación.
+        # | Cantidad: 1 | Dato: Texto |
+        Cbte.tipo_operacion = 'A'
+
+        return (Cbte.a_text(self.start.csv_format), True, '')
+
     def default_result(self, fields):
         lote12_file = self.result.lote12_file
-        message = self.result.message
-        file_name = 'Percepciones_%s-%s.%s' % (
+        lote12_filename = 'Percepciones_%s-%s.%s' % (
             self.start.start_date.strftime('%Y%m%d'),
             self.start.end_date.strftime('%Y%m%d'),
             'csv' if self.start.csv_format else 'txt')
+        lote19_file = self.result.lote19_file
+        lote19_filename = 'Retenciones_%s-%s.%s' % (
+            self.start.start_date.strftime('%Y%m%d'),
+            self.start.end_date.strftime('%Y%m%d'),
+            'csv' if self.start.csv_format else 'txt')
+        message = self.result.message
 
         self.result.lote12_file = None
+        self.result.lote19_file = None
         self.result.message = None
 
         return {
             'lote12_file': lote12_file,
-            'file_name': file_name,
+            'lote12_filename': lote12_filename,
+            'lote19_file': lote19_file,
+            'lote19_filename': lote19_filename,
             'message': message,
             }

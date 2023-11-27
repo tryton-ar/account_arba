@@ -6,7 +6,15 @@ msgctxt "field:arba.rn3811.result,lote12_file:"
 msgid "1.2. Percepciones Act. 7 método Percibido (quincenal)"
 msgstr ""
 
-msgctxt "field:arba.rn3811.result,file_name:"
+msgctxt "field:arba.rn3811.result,lote12_filename:"
+msgid "Name"
+msgstr "Nombre"
+
+msgctxt "field:arba.rn3811.result,lote19_file:"
+msgid "1.9. Retenciones Act. 6 de Bancos"
+msgstr ""
+
+msgctxt "field:arba.rn3811.result,lote19_filename:"
 msgid "Name"
 msgstr "Nombre"
 

@@ -2,6 +2,8 @@
 <form>
     <label name="lote12_file"/>
     <field name="lote12_file"/>
+    <label name="lote19_file"/>
+    <field name="lote19_file"/>
     <newline/>
     <separator id="message" colspan="4" string="Message"/>
     <field name="message" colspan="4"/>
