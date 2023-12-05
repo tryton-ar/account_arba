@@ -4,6 +4,8 @@
 # the full copyright notices and license terms.
 from decimal import Decimal
 import stdnum.ar.cuit as cuit
+from io import BytesIO
+import zipfile
 
 from trytond.model import fields, ModelView
 from trytond.wizard import Wizard, StateView, StateTransition, Button
@@ -472,16 +474,34 @@ class ExportARBARN3811(Wizard):
         return (Cbte.a_text(self.start.csv_format), True, '')
 
     def default_result(self, fields):
-        lote12_file = self.result.lote12_file
-        lote12_filename = 'Percepciones_%s-%s.%s' % (
-            self.start.start_date.strftime('%Y%m%d'),
-            self.start.end_date.strftime('%Y%m%d'),
-            'csv' if self.start.csv_format else 'txt')
-        lote19_file = self.result.lote19_file
-        lote19_filename = 'Retenciones_%s-%s.%s' % (
-            self.start.start_date.strftime('%Y%m%d'),
-            self.start.end_date.strftime('%Y%m%d'),
-            'csv' if self.start.csv_format else 'txt')
+        pool = Pool()
+        Company = pool.get('company.company')
+
+        company = Company(Transaction().context['company'])
+        company_vat_number = company.party.vat_number
+        period = self.start.start_date.strftime('%Y%m') + '0'
+        ext = 'CSV' if self.start.csv_format else 'TXT'
+
+        lote12_filename = 'AR-%s-%s-%s-%s' % (
+            company_vat_number, period, '7', period)
+        lote12_content = BytesIO()
+        with zipfile.ZipFile(lote12_content, 'w') as lote12_content_zip:
+            lote12_content_zip.writestr('%s.%s' % (lote12_filename, ext),
+                self.result.lote12_file)
+        lote12_content = lote12_content.getvalue()
+        lote12_file = (bytearray(lote12_content) if bytes == str
+            else bytes(lote12_content))
+
+        lote19_filename = 'AR-%s-%s-%s-%s' % (
+            company_vat_number, period, '6', period)
+        lote19_content = BytesIO()
+        with zipfile.ZipFile(lote19_content, 'w') as lote19_content_zip:
+            lote19_content_zip.writestr('%s.%s' % (lote19_filename, ext),
+                self.result.lote19_file)
+        lote19_content = lote19_content.getvalue()
+        lote19_file = (bytearray(lote19_content) if bytes == str
+            else bytes(lote19_content))
+
         message = self.result.message
 
         self.result.lote12_file = None
@@ -490,8 +510,8 @@ class ExportARBARN3811(Wizard):
 
         return {
             'lote12_file': lote12_file,
-            'lote12_filename': lote12_filename,
+            'lote12_filename': '%s.ZIP' % lote12_filename,
             'lote19_file': lote19_file,
-            'lote19_filename': lote19_filename,
+            'lote19_filename': '%ss.ZIP' % lote19_filename,
             'message': message,
             }
