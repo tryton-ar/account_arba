@@ -358,7 +358,7 @@ class ExportARBARN3811(Wizard):
         if cuitOk:
             Cbte.cuit_contribuyente = cuitOk
         else:
-            return ('', False, 'ERROR: La factura %s de la entidad %s no '
+            return ('', False, 'ERROR: La factura %s del cliente %s no '
                 'tiene CUIT. Fue quitada del listado.'
                 % (invoice.number, invoice.party.name))
 
@@ -440,7 +440,7 @@ class ExportARBARN3811(Wizard):
         if cuitOk:
             Cbte.cuit_contribuyente = cuitOk
         else:
-            return ('', False, 'ERROR: La retención %s de la entidad %s no '
+            return ('', False, 'ERROR: La retención %s del cliente %s no '
                 'tiene CUIT. Fue quitada del listado.'
                 % (retencion.name, retencion.party.name))
 
@@ -453,7 +453,7 @@ class ExportARBARN3811(Wizard):
             Cbte.monto_imponible = Cbte._format_number(
                 retencion.payment_amount, 9, 3, include_sign=True)
         else:
-            return ('', False, 'ERROR: La retención %s de la entidad %s no '
+            return ('', False, 'ERROR: La retención %s del cliente %s no '
                 'tiene Monto imponible. Fue quitada del listado.'
                 % (retencion.name, retencion.party.name))
 
